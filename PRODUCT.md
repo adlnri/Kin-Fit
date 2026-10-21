@@ -87,3 +87,13 @@ The user asked for healthy breakfast, lunch and dinner dishes plus cheat meals, 
 - Onboarding "Tes repas" adds a grocery budget (tight, medium, comfortable). Tight budget swaps pricey ingredients for cheaper, seasonal, canned or frozen ones and labels the dish "version économique"; regional swaps (couscous, fonio, yam, black beans, local fish…) label it "version locale". Every swap respects diet, practices and allergens.
 - Each dish lists its alternatives (option, budget, local) and an estimated cost level (low, medium, high); breakfast lists budget and local alternatives too. No prices or currencies are shown.
 - The app is authored in French; English and Spanish come from i18n-data.js (bulk translation of the interface and content) and i18n.js (extra strings, patterns, live translation of each render).
+
+## Session length and circuits (added 2026-10-21 at the user's request)
+
+- Onboarding step 2 asks the length of one session, warm-up included: 30, 45, 60, 75 or 90 minutes (default 60). It can be changed from Plan › Programme. Strength sessions get 5 exercises at 30 and 45 min, 6 at 60, 7 at 75 and 90; sets drop by one at 30 min and rise by one at 90. Cardio sessions longer than their base format add a 10-minute warm-up and an easy endurance finish.
+- Plan › Parcours: bodyweight, cardio and dumbbell circuits at any of the five lengths. Work/rest is 30/30 s for beginners, 40/20 s intermediate, 45/15 s advanced; rounds fill the time after a 5 to 8 minute warm-up and a 5 to 7 minute cool-down. A reported knee swaps jumps for no-impact moves; the dumbbell circuit warns when no dumbbells were declared.
+- The AI programme receives the chosen length and is asked to fit it.
+
+## AI (added 2026-10-21)
+
+- A Netlify Function (`/api/ai`) calls Claude with the user's coach and nutrition prompts and returns schema-checked JSON: one request per strength session, one for cardio and recovery, one for the day's meals, and short coach replies. The API key lives only in Netlify's environment. Without the function (GitHub Pages, offline) the app keeps its authored examples, and every AI result is labelled as written by the AI coach.

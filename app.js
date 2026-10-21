@@ -4,7 +4,7 @@
   const {
     $, $$, esc, SPORTS, OBJECTIFS, MATERIEL, PDJ, EVITER, DAYS, DAYS_FULL, E, FOOD, GOAL_FOOD, DRINK,
     lvLabel, lvIdx, sportName, sportData, sportList, variant, loadText, setsReps, restrictionNote,
-    buildPlan, sessionMeta, activity, dailyKcal, breakfast,
+    buildPlan, sessionMeta, activity, dailyKcal, breakfast, DUREES, durOf,
   } = window.NA;
   const M = window.NA_MEALS;
   const ALLERG = M.ALLERGENES;
@@ -133,7 +133,7 @@
     s.log = s.log || {}; s.done = s.done || {}; s.points = s.points || 0; s.stickers = s.stickers || [];
     s.inbox = s.inbox || []; s.sent = s.sent || []; s.chat = s.chat || []; s.seed = s.seed || 0;
     s.sportCount = s.sportCount || {}; s.dupes = s.dupes || {}; s.shop = s.shop || {}; s.streakMax = s.streakMax || 0; s.created = s.created || iso(TODAY);
-    if (s.profile) { s.profile.regime = s.profile.regime || 'omni'; s.profile.pratiques = s.profile.pratiques || []; if (s.profile.cheat == null) s.profile.cheat = 1; s.profile.budget = s.profile.budget || 'moyen'; }
+    if (s.profile) { s.profile.regime = s.profile.regime || 'omni'; s.profile.pratiques = s.profile.pratiques || []; if (s.profile.cheat == null) s.profile.cheat = 1; s.profile.budget = s.profile.budget || 'moyen'; s.profile.duree = durOf(s.profile); }
     delete s.checkins;
     return s;
   };
@@ -142,8 +142,8 @@
   const cur = () => state.sessions.find((s) => s.id === state.current) || null;
   const lg = (sess, d) => { sess.log[d] = sess.log[d] || { ex: [], pdj: false, eau: 0, mob: false, status: '' }; return sess.log[d]; };
 
-  const ui = { view: 'today', day: todayIdx, ob: null, defisTab: 'jour', planTab: 'programme', confirmDelete: false, printing: false };
-  const blank = () => ({ prenom: '', sexe: '', age: '', taille: '', poids: '', objectif: '', niveau: 50, seances: 3, materiel: [], restrictions: '', sports: [], autre: '', petitdej: '', eviter: [], regime: 'omni', pratiques: [], cheat: 1, budget: 'moyen' });
+  const ui = { view: 'today', day: todayIdx, ob: null, defisTab: 'jour', planTab: 'programme', confirmDelete: false, printing: false, aiBusy: null, circuit: 'corps', circuitDur: null };
+  const blank = () => ({ prenom: '', sexe: '', age: '', taille: '', poids: '', objectif: '', niveau: 50, seances: 3, duree: 60, materiel: [], restrictions: '', sports: [], autre: '', petitdej: '', eviter: [], regime: 'omni', pratiques: [], cheat: 1, budget: 'moyen' });
 
   /* ---------- Challenges ---------- */
 
@@ -408,6 +408,10 @@
     return `<div class="glasses" role="group" aria-label="Verres d’eau bus">${Array.from({ length: 8 }, (_, i) => `<button type="button" class="glass${i < n ? ' is-full' : ''}" data-eau="${i + 1}" aria-pressed="${i < n}" aria-label="${i + 1} verre${i ? 's' : ''}"><svg viewBox="0 0 24 32" aria-hidden="true"><path d="M3 3h18l-2.5 26h-13z"/><path class="fill" d="M4.6 12h14.8l-1.7 17H6.3z"/></svg></button>`).join('')}</div>`;
   }
 
+  function durControl(p) {
+    return `<div class="level level--dur"><span class="label" id="dur-l">Durée</span><div class="seg" role="group" aria-labelledby="dur-l">${DUREES.map((n) => `<button type="button" data-dur="${n}" aria-pressed="${durOf(p) === n}">${n} min</button>`).join('')}</div></div>`;
+  }
+
   function levelControl(p) {
     return `<div class="level">
       <label class="label" for="level">Niveau</label>
@@ -478,6 +482,89 @@
     </article>`;
   }
 
+  /* ---------- AI versions (written by /api/ai, see ai.js) ---------- */
+
+  const AI = window.NA_AI;
+  // AI text is already in the user's language: keep the live translator off it.
+  const ai = (v) => `<span data-no-i18n>${esc(v)}</span>`;
+
+  function aiNote(x, what) {
+    const d = new Date(x.at).toLocaleDateString(window.NA_I18N.locale, { day: 'numeric', month: 'long' });
+    return `<p class="ai-note">${icon('star')}<span><b>${what}</b> · ${d}</span></p>`;
+  }
+
+  function aiBusyCard(msg) {
+    return `<article class="card ai-busy" role="status"><span class="ai-dots" aria-hidden="true"><i></i><i></i><i></i></span><p>${msg}</p></article>`;
+  }
+
+  function aiSessionCard(s) {
+    const d = s.data;
+    return `<article class="card card--sport">
+      <header class="card-head"><span class="chip-ico">${icon('dumbbell')}</span><div><h2 class="h2"><span>Séance ${s.num}</span> · ${ai(d.titre)}</h2><p class="muted">${ai(d.objectif)} · ${d.duree_min} min · ${ai(d.intensite)}</p></div><span class="day-pill">${DAYS[s.day]}</span></header>
+      <p>${ai(d.pourquoi)}</p>
+      <ol class="exs">${d.exercices.map((x, i) => `<li class="ex"><span class="ex-num">${i + 1}</span>
+        <div class="ex-main">
+          <h4>${ai(x.nom)}</h4>
+          <p class="ex-meta">${x.series} × ${ai(x.repetitions)} · <span>repos ${x.repos_sec} s</span> · ${ai(x.poids)}</p>
+          <p class="ex-muscle">${ai(x.muscle)}</p>
+          <details><summary>Pourquoi, technique, vidéo</summary><div class="more">
+            <p><b>Pourquoi cet exercice.</b> ${ai(x.pourquoi)}</p>
+            <p><b>Explication.</b> ${ai(x.explication)}</p>
+            <p><b>Erreur à éviter.</b> ${ai(x.erreur)}</p>
+            <p><a href="${yt(x.video_recherche)}" target="_blank" rel="noopener">${icon('link')}<span>YouTube</span> · ${ai(x.video_recherche)}</a></p>
+          </div></details>
+        </div></li>`).join('')}</ol>
+    </article>`;
+  }
+
+  function aiCardioCard(c) {
+    const d = c.data;
+    return `<article class="card card--cardio">
+      <header class="card-head"><span class="chip-ico">${icon('heart')}</span><div><h2 class="h2">${ai(d.type)}</h2><p class="muted">Cardio · ${d.duree_min} min</p></div>${c.day != null ? `<span class="day-pill">${DAYS[c.day]}</span>` : ''}</header>
+      <dl class="facts"><div><dt>Format</dt><dd>${ai(d.format)}</dd></div><div><dt>Objectif</dt><dd>${ai(d.objectif)}</dd></div></dl>
+      <p><b>Conseils techniques :</b> ${ai(d.conseils)}</p>
+      <p><b>Pourquoi :</b> ${ai(d.pourquoi)}</p>
+      <p><a href="${yt(d.video_recherche)}" target="_blank" rel="noopener">${icon('link')}<span>YouTube</span> · ${ai(d.video_recherche)}</a></p>
+    </article>`;
+  }
+
+  function aiRecoCard(r) {
+    return `<article class="card card--rest">
+      <header class="card-head"><span class="chip-ico">${icon('stretch')}</span><div><h2 class="h2">Récupération et conseils</h2><p class="muted">Repos actif</p></div></header>
+      <p><b>Étirements recommandés :</b> ${ai(r.etirements.join(', '))}</p>
+      <ul class="ai-list">${r.conseils.map((x) => `<li>${ai(x)}</li>`).join('')}</ul>
+      <p><b>Astuce pro :</b> ${ai(r.astuce)}</p>
+    </article>`;
+  }
+
+  function aiNutritionCards(x, sess) {
+    const d = x.data; const b = d.petit_dejeuner;
+    const kc = { p: b.proteines * 4, g: b.glucides * 4, l: b.lipides * 9 }; const sum = kc.p + kc.g + kc.l || 1;
+    const pc = (v) => Math.round((v / sum) * 100);
+    const dish = (m) => ({ n: m.nom, k: m.kcal, p: m.proteines, g: m.glucides, l: m.lipides, cost: m.cout, ing: m.ingredients.map((i) => ({ n: i.nom, q: i.quantite })), alts: [], why: m.pourquoi, ai: true });
+    return `<article class="card card--nutrition">
+      <header class="card-head"><span class="chip-ico">${icon('bowl')}</span><div><h2 class="h2"><span>Petit-déjeuner</span> ${ai(b.type)}</h2><p class="muted">${DAYS_FULL[x.day]} · ${x.training ? 'jour d’entraînement' : 'jour de repos'} · valeurs estimées</p></div></header>
+      ${aiNote(x, 'Écrit par le coach IA')}
+      <dl class="macros">
+        <div class="m-k"><dt>Calories</dt><dd>${b.kcal}<small> kcal</small></dd></div>
+        <div class="m-p"><dt>Protéines</dt><dd>${b.proteines}<small> g</small></dd></div>
+        <div class="m-g"><dt>Glucides</dt><dd>${b.glucides}<small> g</small></dd></div>
+        <div class="m-l"><dt>Lipides</dt><dd>${b.lipides}<small> g</small></dd></div>
+      </dl>
+      <div class="macro-bar" role="img" aria-label="Répartition des calories : protéines ${pc(kc.p)} %, glucides ${pc(kc.g)} %, lipides ${pc(kc.l)} %"><i class="p" style="width:${pc(kc.p)}%"></i><i class="g" style="width:${pc(kc.g)}%"></i><i class="l" style="width:${pc(kc.l)}%"></i></div>
+      <ul class="ingr">${b.ingredients.map((i) => `<li>${ai(i.nom)}<b>${i.grammes} g</b></li>`).join('')}</ul>
+      <p><b>Explication :</b> ${ai(b.explication)}</p>
+      <p><b>Boisson :</b> ${ai(b.boisson)}</p>
+      <p><b>Alternative rapide :</b> ${ai(b.alternative_rapide)}</p>
+    </article>
+    <article class="card card--nutrition">
+      <header class="card-head"><span class="chip-ico">${icon('bowl')}</span><div><h2 class="h2">Déjeuner et dîner</h2><p class="muted">${esc(M.summary(sess.profile))}</p></div></header>
+      ${dishBlock('Déjeuner', dish(d.dejeuner))}
+      ${dishBlock('Dîner', dish(d.diner))}
+      <p class="meal-snack"><span class="label">Collation</span> ${ai(d.collation.nom)} · ${d.collation.kcal} kcal</p>
+    </article>`;
+  }
+
   const gramsLabel = (it) => { const f = FOOD[it.id]; if (f.unit) { const n = it.g / f.unit; return `${n} ${f.un}${n > 1 ? 's' : ''} · ${it.g} g`; } return `${it.g} g`; };
 
   function breakfastCard(sess, dayItem, L0, opts = {}) {
@@ -516,13 +603,13 @@
     if (!d) return `<section class="meal"><p class="label">${label}</p><p class="muted">Aucun plat ne correspond à toutes tes restrictions pour ce repas. Modifie ton profil ou demande au coach.</p></section>`;
     return `<section class="meal${d.cheat ? ' meal--cheat' : ''}">
       <p class="label">${label}${d.cheat ? ' · <span class="gold">Repas plaisir</span>' : ''}</p>
-      <h3 class="meal-name">${esc(d.n)}</h3>
+      <h3 class="meal-name">${d.ai ? ai(d.n) : esc(d.n)}</h3>
       <p class="meal-macros"><b>${d.k} kcal</b> · Protéines ${d.p} g · Glucides ${d.g} g · Lipides ${d.l} g</p>
       <p class="meal-cost"><span>Coût :</span> <b>${d.cost}</b></p>
       <details><summary>Ingrédients et conseils</summary><div class="more">
-        <ul class="ingr">${d.ing.map((i) => `<li><span>${esc(i.n)}</span><b>${esc(i.q)}</b></li>`).join('')}</ul>
+        <ul class="ingr">${d.ing.map((i) => (d.ai ? `<li>${ai(i.n)}<b data-no-i18n>${esc(i.q)}</b></li>` : `<li><span>${esc(i.n)}</span><b>${esc(i.q)}</b></li>`)).join('')}</ul>
         ${altList(d.alts)}
-        <p>${esc(d.why)}</p>${d.cheat ? `<p class="gold">${esc(M.CHEAT_TIP)}</p>` : ''}
+        <p>${d.ai ? ai(d.why) : esc(d.why)}</p>${d.cheat ? `<p class="gold">${esc(M.CHEAT_TIP)}</p>` : ''}
       </div></details>
     </section>`;
   }
@@ -552,7 +639,9 @@
     return `Au programme : ${dayItem.title}. Ton petit-déjeuner est renforcé pour alimenter l’effort. Coche tes exercices au fur et à mesure.`;
   }
 
-  const foot = '<p class="foot">Prototype : programmes, défis et valeurs sont des exemples calculés dans ton navigateur, aucun modèle d’IA n’est encore connecté. Les valeurs nutritionnelles sont des estimations. En cas de douleur ou de pathologie, demande l’avis d’un professionnel de santé.</p>';
+  const foot = () => (AI.ready
+    ? '<p class="foot">Les programmes et repas marqués « coach IA » sont écrits par une IA à partir de ton profil ; les autres sont des exemples calculés dans ton navigateur. Charges et valeurs nutritionnelles sont des estimations. En cas de douleur ou de pathologie, demande l’avis d’un professionnel de santé.</p>'
+    : '<p class="foot">Prototype : programmes, défis et valeurs sont des exemples calculés dans ton navigateur, aucun modèle d’IA n’est encore connecté. Les valeurs nutritionnelles sont des estimations. En cas de douleur ou de pathologie, demande l’avis d’un professionnel de santé.</p>');
 
   function pendingBanner() {
     const x = state.pendingShare; if (!x) return '';
@@ -577,6 +666,31 @@
     </div>`;
   }
 
+  function hero(sess, item, daily, date, future) {
+    const p = sess.profile; const day = date[0].toUpperCase() + date.slice(1);
+    const title = ui.day === todayIdx ? `${new Date().getHours() < 18 ? 'Bonjour' : 'Bonsoir'}, ${esc(p.prenom)}` : esc(day);
+    let name; let meta; let ico;
+    if (!item) { name = 'Repos et récupération'; meta = '10 minutes de mobilité'; ico = 'stretch'; }
+    else if (item.kind === 'muscu') { const m = sessionMeta(item, p, sess.seed); name = item.title; meta = `${m.duree} min · ${item.ex.length} exercices · intensité ${m.rpe}/10`; ico = 'dumbbell'; }
+    else { name = item.type; meta = `${item.duree} min · ${item.format}`; ico = 'heart'; }
+    const done = daily[0].progress >= daily[0].target;
+    const n = daily.filter((c) => c.progress >= c.target).length; const C = 2 * Math.PI * 52;
+    const cta = future ? 'Voir la séance' : done ? 'Voir ma séance' : 'Commencer';
+    return `<section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 class="hero-title" id="hero-title">${title}</h1>
+        <p class="lede">${ui.day === todayIdx ? `${esc(day)} · ` : ''}${esc(sportName(p))}, objectif ${OBJECTIFS[p.objectif].toLowerCase()}${future ? ' · à venir' : ''}</p>
+        <div class="hero-session"><span class="chip-ico">${icon(ico)}</span><div><b>${esc(name)}</b><span>${esc(meta)}</span></div></div>
+        <div class="actions"><button type="button" class="btn btn--big btn--sheen" data-act="start">${cta}</button><button type="button" class="btn btn--big btn--ghost btn--glass" data-act="parcours">${icon('bolt')}Faire un parcours</button></div>
+      </div>
+      <div class="hero-ring" role="img" aria-label="${n} défis du jour réussis sur ${daily.length}">
+        <svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="ring-gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e3a1"/><stop offset=".45" stop-color="#d4af37"/><stop offset="1" stop-color="#8a6416"/></linearGradient></defs>
+          <circle class="ring-track" cx="60" cy="60" r="52"/><circle class="ring-val" cx="60" cy="60" r="52" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - n / daily.length)).toFixed(1)}" style="--c0:${C.toFixed(1)}"/></svg>
+        <p><b>${n}<small>/${daily.length}</small></b><span>défis du jour</span></p>
+      </div>
+    </section>`;
+  }
+
   function viewToday(sess) {
     const plan = buildPlan(sess); const item = plan.byDay(ui.day);
     const d = dayDate(ui.day); const key = iso(d); const L0 = lg(sess, key);
@@ -594,8 +708,8 @@
     const daily = dailyList(sess, ui.day);
     const water = daily.find((c) => c.mode === 'water');
     return `${pendingBanner()}
-      <header class="hello"><div><h1 class="h1">${ui.day === todayIdx ? `${new Date().getHours() < 18 ? 'Bonjour' : 'Bonsoir'}, ${esc(sess.profile.prenom)}` : esc(date[0].toUpperCase() + date.slice(1))}</h1>
-        <p class="lede">${ui.day === todayIdx ? `${esc(date[0].toUpperCase() + date.slice(1))} · ` : ''}${esc(sportName(sess.profile))}, objectif ${OBJECTIFS[sess.profile.objectif].toLowerCase()}${future ? ' · à venir' : ''}</p></div>${scorebar(sess)}</header>
+      ${hero(sess, item, daily, date, future)}
+      <div class="hello hello--today">${scorebar(sess)}</div>
       <div class="week" role="group" aria-label="Semaine">${week}</div>
       <section class="daily" aria-label="Défis du jour">${daily.map((c) => defiCard(c, sess, { readOnly: true })).join('')}</section>
       <div class="today-grid">
@@ -608,7 +722,7 @@
             <p aria-live="polite">${esc(coachNote(sess, item, L0))}</p>
             <div class="actions"><button type="button" class="btn btn--ghost" data-view="coach">Poser une question</button><button type="button" class="btn btn--ghost" data-act="launch">${icon('send')}Lancer un défi</button></div></article>
         </div>
-      </div>${foot}`;
+      </div>${foot()}`;
   }
 
   function viewDefis(sess) {
@@ -623,7 +737,7 @@
     return `${pendingBanner()}
       <header class="hello"><div><h1 class="h1">Défis</h1><p class="lede">Chaque défi réussi rapporte des points et des médailles pour tes trophées.</p></div>${scorebar(sess)}</header>
       <div class="tabs" role="tablist" aria-label="Catégories de défis">${tabs.map(([k, l]) => `<button type="button" role="tab" aria-selected="${ui.defisTab === k}" data-tab="${k}">${l}${k === 'amis' && fresh ? ` <span class="dot-count">${fresh}</span>` : ''}</button>`).join('')}</div>
-      <div role="tabpanel">${body}</div>${foot}`;
+      <div role="tabpanel">${body}</div>${foot()}`;
   }
 
   function participants(item) {
@@ -661,13 +775,13 @@
         <div><p class="h3">Rang ${r.n}</p><p class="muted">${nx ? `Encore ${nx.min - sess.points} points pour l’écusson ${nx.n}.` : 'Tu as tous les écussons. Respect.'}</p>
           ${nx ? `<div class="meter meter--rang" role="progressbar" aria-label="Progression vers ${nx.n}" aria-valuemin="${r.min}" aria-valuemax="${nx.min}" aria-valuenow="${sess.points}"><i style="--p:${((sess.points - r.min) / (nx.min - r.min)).toFixed(3)}"></i></div>` : ''}</div>
       </section>
-      ${pages}${foot}`;
+      ${pages}${foot()}`;
   }
 
   function profileFacts(p, nutrition) {
     const rows = [['Sexe', p.sexe === 'femme' ? 'Femme' : 'Homme'], ['Âge', `${p.age} ans`], ['Taille', `${p.taille} cm`], ['Poids', `${p.poids} kg`], ['Objectif', OBJECTIFS[p.objectif]], [nutrition ? 'Sport principal' : 'Sports', nutrition ? sportName(p) : sportList(p)]];
     if (nutrition) rows.push(['Niveau d’activité', activity(p).label], ['Régime', M.REGIMES[p.regime || 'omni']], ['Pratiques', (p.pratiques || []).map((x) => M.PRATIQUES[x]).join(', ') || 'aucune'], ['Repas plaisir', `${p.cheat ?? 1} par semaine`], ['Budget', M.BUDGETS[p.budget || 'moyen']], ['Région', M.REGIONS[window.NA_I18N.region]]);
-    else rows.push(['Niveau', `<span data-lv>${lvLabel(p.niveau)}</span>`], ['Séances', `${p.seances} par semaine`], ['Matériel', p.materiel.map((m) => MATERIEL[m]).join(', ')]);
+    else rows.push(['Niveau', `<span data-lv>${lvLabel(p.niveau)}</span>`], ['Séances', `${p.seances} par semaine`], ['Durée', `${durOf(p)} min par séance`], ['Matériel', p.materiel.map((m) => MATERIEL[m]).join(', ')]);
     return `<dl class="facts">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${k === 'Niveau' ? v : esc(v)}</dd></div>`).join('')}</dl>`;
   }
 
@@ -722,7 +836,7 @@
         <div class="shop-grid">${sl.groups.map(([aisle, list]) => `<section class="shop-aisle"><h3 class="h3">${aisle}</h3><ul>${list.map((v) => `<li><label class="shop-item${checked.has(v.n) ? ' is-checked' : ''}"><input type="checkbox" data-shop="${esc(v.n)}"${checked.has(v.n) ? ' checked' : ''}><span class="shop-box" aria-hidden="true">${icon('check')}</span><span class="shop-name">${esc(v.n)}</span><b class="shop-qty">${qtyLabel(v)}</b></label></li>`).join('')}</ul></section>`).join('')}
           ${sl.snacks.length ? `<section class="shop-aisle"><h3 class="h3">Collations</h3><ul>${sl.snacks.map(([n, k]) => `<li class="shop-snack"><span>${esc(n)}</span><b>× ${k}</b></li>`).join('')}</ul></section>` : ''}</div>
         <p class="hint">Les quantités sont des estimations, arrondies pour faciliter les courses. Riz, pâtes et céréales sont indiqués en poids sec.</p>
-      </article>${foot}`;
+      </article>${foot()}`;
   }
 
   function shoppingText(sess) {
@@ -733,39 +847,87 @@
     return lines.join('\n');
   }
 
+  /* ---------- Circuits (parcours) ---------- */
+
+  function viewParcours(sess, tabs) {
+    const p = sess.profile; const C = window.NA_CIRCUITS;
+    const c = C.build(p, ui.circuit, ui.circuitDur || durOf(p));
+    const list = (xs) => `<ul class="ai-list">${xs.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    return `<header class="hello"><div><h1 class="h1">Parcours</h1><p class="lede">Des circuits à enchaîner sans temps mort : choisis ton style et ta durée, le rythme et le nombre de tours suivent ton niveau.</p></div>
+      <div class="actions"><button type="button" class="btn btn--ghost" data-act="print">Imprimer</button></div></header>${tabs}
+      <div class="parcours-pick">
+        <div class="seg" role="group" aria-label="Type de parcours">${Object.entries(C.TYPES).map(([k, t]) => `<button type="button" data-circuit="${k}" aria-pressed="${k === c.type}">${icon(t.icon)}${t.name}</button>`).join('')}</div>
+        <div class="seg" role="group" aria-label="Durée du parcours">${DUREES.map((n) => `<button type="button" data-cdur="${n}" aria-pressed="${n === c.duree}">${n} min</button>`).join('')}</div>
+      </div>
+      <article class="card card--sport parcours">
+        <header class="card-head"><span class="chip-ico">${icon(c.icon)}</span><div><h2 class="h2">Parcours ${c.name.toLowerCase()}</h2><p class="muted">${c.duree} min · ${c.rounds} tours · ${c.stations.length} exercices</p></div></header>
+        ${c.missing ? '<p class="note">Il te faut une paire d’haltères. Pour débuter, des bouteilles d’eau ou un sac chargé font l’affaire.</p>' : ''}
+        ${c.knee ? '<p class="note">Genou signalé : les sauts sont remplacés par des versions sans impact.</p>' : ''}
+        <dl class="facts"><div><dt>Effort</dt><dd>${c.pace.on} s</dd></div><div><dt>Repos entre exercices</dt><dd>${c.pace.off} s</dd></div><div><dt>Repos entre les tours</dt><dd>${c.pace.rest} s</dd></div><div><dt>Tours</dt><dd>${c.rounds}</dd></div></dl>
+        <p>${esc(c.why)}</p>
+        <section class="parcours-part"><h3 class="h3">Échauffement · ${c.warm} min</h3>${list(c.warmList)}</section>
+        <section class="parcours-part"><h3 class="h3">Le circuit · ${c.rounds} tours</h3>
+          <ol class="exs">${c.stations.map((x, i) => `<li class="ex"><span class="ex-num">${i + 1}</span><div class="ex-main">
+            <h4>${esc(x.n)}</h4>
+            <p class="ex-meta">${c.pace.on} s d’effort · ${c.pace.off} s de repos · ${esc(x.load)}</p>
+            <p class="ex-muscle">${esc(x.m)}</p>
+            <details><summary>Technique et vidéo</summary><div class="more">
+              <p><b>Explication.</b> ${esc(x.tech)}</p>
+              <p><b>Erreur à éviter.</b> ${esc(x.err)}</p>
+              <p><a href="${yt(x.q)}" target="_blank" rel="noopener">${icon('link')}Chercher « ${esc(x.q)} » sur YouTube</a></p>
+            </div></details></div></li>`).join('')}</ol></section>
+        <section class="parcours-part"><h3 class="h3">Retour au calme · ${c.cool} min</h3>${list(c.coolList)}</section>
+        <p class="hint">Bois quelques gorgées entre les tours. Si une position fait mal, passe à l’exercice suivant.</p>
+      </article>${foot()}`;
+  }
+
   function viewPlan(sess) {
     const p = sess.profile;
-    const tabs = `<div class="tabs" role="tablist" aria-label="Plan"><button type="button" role="tab" data-ptab="programme" aria-selected="${ui.planTab === 'programme'}">Programme sportif</button><button type="button" role="tab" data-ptab="nutrition" aria-selected="${ui.planTab === 'nutrition'}">Nutrition</button><button type="button" role="tab" data-ptab="courses" aria-selected="${ui.planTab === 'courses'}">Courses</button></div>`;
+    const tabs = `<div class="tabs" role="tablist" aria-label="Plan"><button type="button" role="tab" data-ptab="programme" aria-selected="${ui.planTab === 'programme'}">Programme sportif</button><button type="button" role="tab" data-ptab="nutrition" aria-selected="${ui.planTab === 'nutrition'}">Nutrition</button><button type="button" role="tab" data-ptab="parcours" aria-selected="${ui.planTab === 'parcours'}">Parcours</button><button type="button" role="tab" data-ptab="courses" aria-selected="${ui.planTab === 'courses'}">Courses</button></div>`;
     if (ui.planTab === 'courses') return viewCourses(sess, tabs);
+    if (ui.planTab === 'parcours') return viewParcours(sess, tabs);
     if (ui.planTab === 'nutrition') {
       const item = buildPlan(sess).byDay(todayIdx);
-      return `<header class="hello"><div><h1 class="h1">Nutrition</h1><p class="lede">Besoin estimé : ${dailyKcal(p)} kcal par jour. Petit-déjeuner 25 %, déjeuner 35 %, dîner 30 %, collation 10 %, ajustés selon que tu t’entraînes ou non.</p></div></header>${tabs}
-        <div class="today-grid"><div class="stack">${breakfastCard(sess, item, lg(sess, iso(TODAY)), { full: true, readOnly: true })}
+      const nut = sess.ai && sess.ai.nut && sess.ai.nut.date === iso(TODAY) ? sess.ai.nut : null;
+      const nutBtns = AI.ready ? `<div class="actions"><button type="button" class="btn" data-act="ai-nut"${ui.aiBusy ? ' disabled' : ''}>${icon('star')}${nut ? 'Réécrire avec l’IA' : 'Ma journée avec l’IA'}</button>${nut ? '<button type="button" class="btn btn--ghost" data-act="ai-nut-clear">Version exemple</button>' : ''}</div>` : '';
+      const today = ui.aiBusy === 'nut' ? aiBusyCard('Le coach IA prépare tes repas du jour. Compte une vingtaine de secondes.')
+        : nut ? aiNutritionCards(nut, sess) : breakfastCard(sess, item, lg(sess, iso(TODAY)), { full: true, readOnly: true });
+      return `<header class="hello"><div><h1 class="h1">Nutrition</h1><p class="lede">Besoin estimé : ${dailyKcal(p)} kcal par jour. Petit-déjeuner 25 %, déjeuner 35 %, dîner 30 %, collation 10 %, ajustés selon que tu t’entraînes ou non.</p></div>${nutBtns}</header>${tabs}
+        <div class="today-grid"><div class="stack">${today}
           <article class="card card--nutrition"><header class="card-head"><span class="chip-ico">${icon('calendar')}</span><div><h2 class="h2">Repas de la semaine</h2><p class="muted">${esc(M.summary(p))}</p></div></header>
             <div class="week-meals">${DAYS.map((l, i) => { const m = mealsFor(sess, i); const cheat = (m.dej && m.dej.cheat) || (m.diner && m.diner.cheat); return `<details${i === todayIdx ? ' open' : ''}><summary><span class="wm-day">${DAYS_FULL[i]}</span><span class="wm-names">${esc(m.dej ? m.dej.n : '—')} · ${esc(m.diner ? m.diner.n : '—')}</span>${cheat ? '<span class="tag">Plaisir</span>' : ''}</summary>${dishBlock('Déjeuner', m.dej)}${dishBlock('Dîner', m.diner)}</details>`; }).join('')}</div>
           </article></div>
         <div class="stack"><article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Profil nutrition</h2></div></header>${profileFacts(p, true)}
           <p><b>À éviter :</b> ${p.eviter.length ? esc(p.eviter.map((a) => ALLERG[a]).join(', ')) : 'rien de signalé'}.</p>
-          <div class="actions"><button type="button" class="btn btn--ghost" data-act="edit">Modifier mon profil</button></div></article></div></div>${foot}`;
+          <div class="actions"><button type="button" class="btn btn--ghost" data-act="edit">Modifier mon profil</button></div></article></div></div>${foot()}`;
     }
     const plan = buildPlan(sess);
-    return `<header class="hello"><div><h1 class="h1">Programme sportif</h1><p class="lede">${OBJECTIFS[p.objectif]} · ${esc(sportList(p))} · version ${sess.seed + 1}</p></div>
-      <div class="actions"><button type="button" class="btn" data-act="regen">Régénérer</button><button type="button" class="btn btn--ghost" data-act="print">Imprimer</button></div></header>${tabs}
+    const prog = sess.ai && sess.ai.prog;
+    const aiBtns = AI.ready ? `<button type="button" class="btn" data-act="ai-prog"${ui.aiBusy ? ' disabled' : ''}>${icon('star')}${prog ? 'Réécrire avec l’IA' : 'Générer avec l’IA'}</button>${prog ? '<button type="button" class="btn btn--ghost" data-act="ai-prog-clear">Version exemple</button>' : ''}` : '';
+    const cards = prog
+      ? [...prog.seances.map((x) => ({ day: x.day, html: aiSessionCard(x) })), ...prog.cardio.map((x) => ({ day: x.day ?? 9, html: aiCardioCard(x) }))].sort((a, b) => a.day - b.day).map((x) => x.html).join('') + aiRecoCard(prog.recuperation)
+      : plan.items.map((it) => (it.kind === 'muscu' ? sessionCard(it, sess) : cardioCard(it, sess))).join('') + recoCard(sess, 'Récupération et conseils');
+    return `<header class="hello"><div><h1 class="h1">Programme sportif</h1><p class="lede">${OBJECTIFS[p.objectif]} · ${esc(sportList(p))} · ${prog ? 'coach IA' : `version ${sess.seed + 1}`}</p></div>
+      <div class="actions">${aiBtns}${prog ? '' : `<button type="button" class="btn${AI.ready ? ' btn--ghost' : ''}" data-act="regen">Régénérer</button>`}<button type="button" class="btn btn--ghost" data-act="print">Imprimer</button></div></header>${tabs}
       <div class="stack">
-        <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Profil résumé</h2></div></header>${profileFacts(p, false)}${levelControl(p)}<p class="hint">Déplace le curseur : les charges et les séries de toutes les séances se recalculent.</p></article>
-        <div class="plan-grid">${plan.items.map((it) => (it.kind === 'muscu' ? sessionCard(it, sess) : cardioCard(it, sess))).join('')}${recoCard(sess, 'Récupération et conseils')}</div>
-      </div>${foot}`;
+        <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Profil résumé</h2></div></header>${profileFacts(p, false)}${prog ? '' : `${levelControl(p)}${durControl(p)}<p class="hint">Niveau et durée recalculent les charges, les séries et le nombre d’exercices de toutes les séances.</p>`}</article>
+        ${ui.aiBusy === 'prog' ? aiBusyCard('Le coach IA écrit tes séances, une par une. Compte environ 30 secondes.') : ''}
+        ${prog && ui.aiBusy !== 'prog' ? `${aiNote(prog, 'Écrit par le coach IA')}<p class="hint">Charges et durées sont des estimations de départ : ajuste-les dès ta première séance et arrête tout exercice douloureux. L’onglet Aujourd’hui garde le programme d’exemple pour cocher tes exercices.</p>` : ''}
+        <div class="plan-grid">${ui.aiBusy === 'prog' ? '' : cards}</div>
+      </div>${foot()}`;
   }
 
   function viewCoach(sess) {
     const msgs = sess.chat.length
-      ? sess.chat.map((m) => `<div class="msg${m.me ? ' msg--me' : ''}"><b>${m.me ? 'Toi' : 'Coach'}</b>${esc(m.t)}</div>`).join('')
+      ? sess.chat.map((m) => (m.pending
+        ? '<div class="msg msg--wait" aria-busy="true"><b>Coach</b><span class="ai-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">Le coach écrit</span></div>'
+        : `<div class="msg${m.me ? ' msg--me' : ''}"><b>${m.me ? 'Toi' : 'Coach'}</b>${m.ai ? ai(m.t) : esc(m.t)}</div>`)).join('')
       : '<p class="empty">Aucun message pour l’instant. Essaie : « Par quoi remplacer le squat ? », « J’ai faim le soir », « Je suis fatigué aujourd’hui ».</p>';
-    return `<header class="hello"><div><h1 class="h1">Ton coach</h1><p class="lede">Pose une question sur ta séance, ton assiette ou tes défis. Les réponses de ce prototype sont écrites à l’avance.</p></div></header>
+    return `<header class="hello"><div><h1 class="h1">Ton coach</h1><p class="lede">${AI.ready ? 'Pose une question sur ta séance, ton assiette ou tes défis. Le coach IA répond à partir de ton profil.' : 'Pose une question sur ta séance, ton assiette ou tes défis. Les réponses de ce prototype sont écrites à l’avance.'}</p></div></header>
       <article class="card card--coach chat-card">
         <div class="chat" id="chat" role="log" aria-label="Conversation avec le coach">${msgs}</div>
         <form class="chat-form" id="chat-form"><input class="input" id="chat-input" type="text" aria-label="Ton message" placeholder="Écris ta question" autocomplete="off" required><button class="btn" type="submit">${icon('send')}Envoyer</button></form>
-      </article>${foot}`;
+      </article>${foot()}`;
   }
 
   /* ---------- Install as an app (PWA) ---------- */
@@ -797,7 +959,7 @@
           <ul class="session-list">${state.sessions.map((s) => `<li><span class="avatar">${esc(s.profile.prenom.slice(0, 1).toUpperCase())}</span><span><b>${esc(s.profile.prenom)}</b><small>${esc(sportName(s.profile))} · ${s.points} pts · ${rangOf(s.points).n}</small></span>${s.id === sess.id ? '<span class="tag">Active</span>' : `<button type="button" class="btn btn--ghost" data-switch="${s.id}">Ouvrir</button>`}</li>`).join('')}</ul>
           ${ui.confirmDelete ? `<div class="note" role="alertdialog" aria-label="Confirmer la suppression"><p>Supprimer définitivement la session de ${esc(p.prenom)} ? Son programme, son album et ses messages seront effacés.</p><div class="actions"><button type="button" class="btn" data-act="delete-yes">Supprimer</button><button type="button" class="btn btn--ghost" data-act="delete-no">Garder</button></div></div>` : `<div class="actions"><button type="button" class="btn btn--danger" data-act="delete">Supprimer la session de ${esc(p.prenom)}</button></div>`}
         </article>
-      </div>${foot}`;
+      </div>${foot()}`;
   }
 
   /* ---------- Launch dialog ---------- */
@@ -865,6 +1027,7 @@
     if (o.step === 1) return `
       <div class="field"><label for="niveau">Niveau sportif : <output id="niveau-out">${lvLabel(p.niveau)}</output></label><input type="range" id="niveau" name="niveau" min="0" max="100" value="${p.niveau}"><p class="hint">De débutant à avancé. Tu pourras l’ajuster à tout moment.</p></div>
       <fieldset><legend>Séances par semaine</legend><div class="choices">${[2, 3, 4, 5, 6].map((n) => radio('seances', String(n), String(n), String(p.seances))).join('')}</div></fieldset>
+      <fieldset><legend>Durée d’une séance, échauffement compris</legend><div class="choices">${DUREES.map((n) => radio('duree', String(n), `${n} min`, String(durOf(p)))).join('')}</div></fieldset>
       <fieldset><legend>Matériel disponible (plusieurs choix possibles)</legend><div class="choices">${Object.entries(MATERIEL).map(([k, l]) => check('materiel', k, l, p.materiel)).join('')}</div></fieldset>
       <div class="field"><label for="restrictions">Pathologies, douleurs ou restrictions (facultatif)</label><textarea id="restrictions" name="restrictions" placeholder="Exemple : douleur au genou droit">${esc(p.restrictions)}</textarea></div>`;
     if (o.step === 2) return `
@@ -926,7 +1089,7 @@
   function collect() {
     const f = $('#ob-form'); const p = ui.ob.p; const fd = new FormData(f);
     if (ui.ob.step === 0) { p.prenom = (fd.get('prenom') || '').trim(); p.sexe = fd.get('sexe') || ''; ['age', 'taille', 'poids'].forEach((k) => { p[k] = fd.get(k) ? +fd.get(k) : ''; }); p.objectif = fd.get('objectif') || ''; }
-    if (ui.ob.step === 1) { p.niveau = +fd.get('niveau'); p.seances = +(fd.get('seances') || 0); p.materiel = fd.getAll('materiel'); p.restrictions = fd.get('restrictions') || ''; }
+    if (ui.ob.step === 1) { p.niveau = +fd.get('niveau'); p.seances = +(fd.get('seances') || 0); p.duree = +(fd.get('duree') || 60); p.materiel = fd.getAll('materiel'); p.restrictions = fd.get('restrictions') || ''; }
     if (ui.ob.step === 2) { p.sports = fd.getAll('sports'); p.autre = (fd.get('autre') || '').trim(); }
     if (ui.ob.step === 3) { p.regime = fd.get('regime') || 'omni'; p.pratiques = fd.getAll('pratiques'); p.eviter = fd.getAll('eviter'); }
     if (ui.ob.step === 4) { p.petitdej = fd.get('petitdej') || ''; p.cheat = +(fd.get('cheat') ?? 1); p.budget = fd.get('budget') || 'moyen'; }
@@ -953,7 +1116,7 @@
 
   function finishOnboarding() {
     const o = ui.ob; let sess;
-    if (o.editId) { sess = state.sessions.find((x) => x.id === o.editId); sess.profile = o.p; sess.seed += 1; }
+    if (o.editId) { sess = state.sessions.find((x) => x.id === o.editId); sess.profile = o.p; sess.seed += 1; sess.ai = {}; }
     else { sess = migrate({ id: `s${Date.now()}`, seed: 0, profile: o.p }); state.sessions.push(sess); }
     state.current = sess.id; ui.ob = null; ui.view = 'today'; ui.day = todayIdx;
     save();
@@ -974,6 +1137,7 @@
 
   function render() {
     const app = $('#app'); const main = $('#main'); const sess = cur();
+    document.body.dataset.view = '';
     if (!window.NA_I18N.prefs.country) { app.classList.add('is-onboarding'); main.innerHTML = viewWelcome(); return; }
     if (!sess && !ui.ob) ui.ob = { step: 0, p: blank(), editId: null };
     if (ui.ob) { app.classList.add('is-onboarding'); main.innerHTML = viewOnboarding(); return; }
@@ -981,6 +1145,10 @@
     const views = { today: viewToday, defis: viewDefis, album: viewAlbum, plan: viewPlan, coach: viewCoach, profil: viewProfil };
     main.classList.toggle('printing', ui.printing);
     main.innerHTML = (views[ui.view] || viewToday)(sess);
+    document.body.dataset.view = ui.view;
+    const entering = ui.lastView !== ui.view; ui.lastView = ui.view;
+    main.classList.remove('is-entering');
+    if (entering) { void main.offsetWidth; main.classList.add('is-entering'); }
     renderRail(sess);
     const chat = $('#chat'); if (chat) chat.scrollTop = chat.scrollHeight;
   }
@@ -992,6 +1160,11 @@
     $$('[data-sr]').forEach((el) => { el.textContent = setsReps(E[el.dataset.sr], p, sess.seed, +el.dataset.i).txt; });
     $$('[data-lv]').forEach((el) => { el.textContent = lvLabel(v); });
     const out = $('#level-out'); if (out) out.textContent = lvLabel(v);
+  }
+
+  function coachContext(sess) {
+    const it = buildPlan(sess).byDay(todayIdx); const L0 = lg(sess, iso(TODAY));
+    return `${DAYS_FULL[todayIdx]} : ${it ? it.title : 'jour de repos'}${L0.status ? ` (${L0.status})` : ''}. Exercices cochés : ${L0.ex.length}. Petit-déjeuner pris : ${L0.pdj ? 'oui' : 'non'}. Verres d’eau : ${L0.eau} sur 8. Points : ${sess.points}.`;
   }
 
   function reply(text, sess) {
@@ -1036,6 +1209,9 @@
     if (t.dataset.view) return go(t.dataset.view);
     if (t.dataset.goto) { ui.defisTab = t.dataset.goto; return go('defis'); }
     if (t.dataset.tab) { ui.defisTab = t.dataset.tab; render(); return refocus(`[data-tab="${ui.defisTab}"]`); }
+    if (t.dataset.circuit) { ui.circuit = t.dataset.circuit; render(); return refocus(`[data-circuit="${ui.circuit}"]`); }
+    if (t.dataset.cdur) { ui.circuitDur = +t.dataset.cdur; render(); return refocus(`[data-cdur="${ui.circuitDur}"]`); }
+    if (t.dataset.dur && sess) { sess.profile.duree = +t.dataset.dur; save(); render(); return refocus(`[data-dur="${t.dataset.dur}"]`); }
     if (t.dataset.ptab) { ui.planTab = t.dataset.ptab; render(); return refocus(`[data-ptab="${ui.planTab}"]`); }
     if (t.dataset.day != null) { ui.day = +t.dataset.day; render(); return refocus(`[data-day="${ui.day}"]`); }
     if (t.dataset.switch) { state.current = t.dataset.switch; save(); ui.day = todayIdx; return go('today'); }
@@ -1116,6 +1292,28 @@
       state.pendingShare = null; save(); ui.defisTab = 'amis'; go('defis'); toast('Défi relevé. À toi de jouer !'); return;
     }
     if (a === 'share-later') { state.pendingShare = null; save(); render(); return; }
+    if (a === 'parcours') { ui.planTab = 'parcours'; return go('plan'); }
+    if (a === 'start') {
+      const r = t.getBoundingClientRect(); sparks(r.left + r.width / 2, r.top + r.height / 2, 40, 0.5);
+      const card = $('.today-grid .stack > .card'); if (!card) return;
+      card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      const first = card.querySelector('input:not(:checked):not(:disabled), .card-foot .btn'); if (first) setTimeout(() => first.focus({ preventScroll: true }), 450);
+      return;
+    }
+    if (a === 'ai-prog' && sess && !ui.aiBusy) {
+      ui.aiBusy = 'prog'; render();
+      try { const prog = await AI.programme(sess); sess.ai = { ...sess.ai, prog }; save(); toast('Programme écrit par le coach IA.'); }
+      catch (err) { toast('Le coach IA n’a pas pu répondre. Ton programme actuel reste affiché, réessaie plus tard.'); }
+      ui.aiBusy = null; render(); return;
+    }
+    if (a === 'ai-nut' && sess && !ui.aiBusy) {
+      ui.aiBusy = 'nut'; render();
+      try { const nut = await AI.nutrition(sess, todayIdx, !!buildPlan(sess).byDay(todayIdx)); sess.ai = { ...sess.ai, nut: { ...nut, date: iso(TODAY) } }; save(); toast('Repas du jour écrits par le coach IA.'); }
+      catch (err) { toast('Le coach IA n’a pas pu répondre. Tes repas actuels restent affichés, réessaie plus tard.'); }
+      ui.aiBusy = null; render(); return;
+    }
+    if (a === 'ai-prog-clear' && sess && sess.ai) { delete sess.ai.prog; save(); render(); return; }
+    if (a === 'ai-nut-clear' && sess && sess.ai) { delete sess.ai.nut; save(); render(); return; }
     if (a === 'regen' && sess) { sess.seed += 1; save(); ui.printing = true; render(); ui.printing = false; }
     if (a === 'print') window.print();
     if (a === 'edit' && sess) startOnboarding(sess.id);
@@ -1169,14 +1367,22 @@
     }
     if (e.target.id === 'chat-form') {
       const sess = cur(); const input = $('#chat-input'); const text = input.value.trim(); if (!text || !sess) return;
-      sess.chat.push({ me: true, t: text }, { me: false, t: reply(text, sess) }); save(); render(); refocus('#chat-input');
+      sess.chat.push({ me: true, t: text });
+      if (!AI.ready) { sess.chat.push({ me: false, t: reply(text, sess) }); save(); render(); refocus('#chat-input'); return; }
+      const wait = { me: false, t: '', pending: true }; sess.chat.push(wait); render(); refocus('#chat-input');
+      AI.coach(sess, coachContext(sess))
+        .then((t) => { wait.t = t; wait.ai = true; })
+        .catch(() => { wait.t = reply(text, sess); })
+        .finally(() => { delete wait.pending; save(); if (ui.view === 'coach' && cur() === sess) { render(); refocus('#chat-input'); } });
     }
   });
 
   window.addEventListener('hashchange', () => { readShare(); render(); });
 
+  state.sessions.forEach((x) => { x.chat = (x.chat || []).filter((m) => !m.pending); });
   readShare();
   if (state.pendingShare && cur()) ui.view = 'defis';
   if (cur()) settle(cur(), true);
   render();
+  AI.ping.then((ok) => { if (ok && !ui.ob && !document.activeElement.matches('input, textarea, select')) render(); });
 })();

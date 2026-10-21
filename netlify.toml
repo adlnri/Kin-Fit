@@ -1,0 +1,9 @@
+# Netlify: the app is copied into dist/ and the AI function is served at /api/ai.
+# Set ANTHROPIC_API_KEY in Site configuration > Environment variables (never in this file).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

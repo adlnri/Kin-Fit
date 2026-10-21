@@ -351,3 +351,14 @@ Seven 20px-radius day tiles on Case Surface, each with a 7px dot in the day's ca
 - **Don't** ship raster medal or badge art; medals are SVG line art recoloured by CSS, ranks are SVG shields.
 - **Don't** use square corners on a control or a pill on a container.
 - **Don't** block the page for a routine win; the full-screen dialog is for new medals and milestones.
+
+
+## Today screen (refined 2026-10-21 at the user's request)
+
+The user asked for a home screen "plus jolie, plus glossy et lisse, c'est trop neutre" and chose a mix of black lacquer and polished gold, smoked glass, and a satin hero, plus an abstract gold-and-black background image.
+
+- **Backdrop:** `images/kinfit-silk.jpg` (1920×1200) and `images/kinfit-silk-mobile.jpg` (900×1600), gold silk folds with a lacquer reflection and sparks on black. Provenance: generated procedurally by `scripts/silk.py` (height field of warped sine folds, Blinn-Phong shading, gold colour ramp, blurred spark points, film grain); no photograph, stock image or third-party asset. Shown only on the Today view, fixed behind the content under a black gradient (50 % to 90 %).
+- **Hero:** a 32px-radius lacquered panel (26px on mobile) at the top of Today: the greeting in Dela Gothic One at clamp(2.3rem, 4.8vw, 4.1rem), the date and sport, a glass chip with today's session (name, duration, exercises, intensity), the primary "Commencer" button and a ghost-glass "Faire un parcours" button. On the right, a gold ring (stroke gradient #f6e3a1 → #d4af37 → #8a6416) counting today's challenges done out of three. Commencer scrolls to the session card, focuses the first open exercise and fires a small spark burst.
+- **Metallic CTA:** the gold sheen button gains an inner bevel and a highlight that slides across it three times after the view opens (none with reduced motion).
+- **Smoked glass:** on Today only, cards, challenge cards, score chips and unselected days use a translucent warm-black gradient with an 18px backdrop blur, a 10 % gold hairline and an inset top highlight; cards round to 30px.
+- **Entrance:** once per arrival on the view, the hero, chips, week, challenges and cards rise out of a 6px blur, staggered by 40ms; the ring fills from empty. Re-renders inside the view do not replay it.

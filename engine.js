@@ -150,6 +150,11 @@
     B: { zone: 'Haut du corps, poussée et tirage', key: 'haut', obj: 'Équilibrer poussée et tirage, protéger les épaules', ex: ['bench', 'row', 'ohp', 'pull', 'face', 'pallof'] },
     C: { zone: 'Corps entier et gainage', key: 'tronc', obj: 'Relier le bas et le haut du corps par un tronc solide', ex: ['deadlift', 'thruster', 'traction', 'farmer', 'chop', 'deadbug'] },
   };
+  // Session length chosen in onboarding: how many exercises and how many extra sets fit in it.
+  const DUREES = [30, 45, 60, 75, 90];
+  const DUR = { 30: { n: 5, ds: -1 }, 45: { n: 5, ds: 0 }, 60: { n: 6, ds: 0 }, 75: { n: 7, ds: 0 }, 90: { n: 7, ds: 1 } };
+  const durOf = (p) => (DUR[p.duree] ? +p.duree : 60);
+  const EXTRA_EX = ['deadbug', 'pallof', 'chop', 'farmer', 'planche', 'face', 'mollet'];
   const ORDER = { 2: ['C', 'K'], 3: ['A', 'K', 'B'], 4: ['A', 'B', 'K', 'C'], 5: ['A', 'K', 'B', 'C', 'K'], 6: ['A', 'K', 'B', 'K', 'C', 'K'] };
   const DAYMAP = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 5], 5: [0, 1, 3, 4, 5], 6: [0, 1, 2, 3, 4, 5] };
 
@@ -231,7 +236,7 @@
   }
 
   function setsReps(ex, p, seed, i) {
-    let s = ex.s + (lvIdx(p.niveau) - 1);
+    let s = ex.s + (lvIdx(p.niveau) - 1) + DUR[durOf(p)].ds;
     let r = ex.r;
     if (typeof r === 'number') {
       const k = (seed + i) % 3;
@@ -262,21 +267,24 @@
       const day = DAYMAP[n][i];
       if (c === 'K') {
         const k = ki++ % 2 === 0 ? sd.cardio : ZONE2;
-        return { ...k, kind: 'cardio', day, title: k.type };
+        const D = durOf(p); const extra = D - 10 - k.duree;
+        const c = { ...k, kind: 'cardio', day, title: k.type };
+        if (extra >= 5) { c.duree = D; c.format = `${k.format}. Échauffement 10 min, puis ${extra} min d’endurance facile pour finir`; }
+        return c;
       }
       const t = TPL[c];
       const rot = t.ex.slice(1);
       const shift = sess.seed % rot.length;
-      const ex = [t.ex[0], ...rot.slice(shift), ...rot.slice(0, shift)];
+      const all = [t.ex[0], ...rot.slice(shift), ...rot.slice(0, shift)];
+      const want = DUR[durOf(p)].n; const ex = all.slice(0, want);
+      EXTRA_EX.forEach((id) => { if (ex.length < want && !ex.includes(id)) ex.push(id); });
       return { kind: 'muscu', day, num: ++mi, tpl: t, ex, title: `Séance ${mi} · ${t.zone}`, short: t.zone };
     });
     return { items, byDay: (d) => items.find((it) => it.day === d) || null };
   }
 
   function sessionMeta(item, p, seed) {
-    let sec = 0;
-    item.ex.forEach((id, i) => { const sr = setsReps(E[id], p, seed, i); sec += sr.s * (E[id].rest + 40); });
-    return { duree: round(sec / 60 + 10, 5), rpe: [6, 7, 8][lvIdx(p.niveau)] };
+    return { duree: durOf(p), rpe: [6, 7, 8][lvIdx(p.niveau)] };
   }
 
   function activity(p) {
@@ -316,6 +324,6 @@
   }
 
 
-  window.NA = { $, $$, esc, round, SPORTS, OBJECTIFS, MATERIEL, PDJ, EVITER, DAYS, DAYS_FULL, SPORT, ZONE2, E, TPL, FOOD, BF, GOAL_FOOD, DRINK,
+  window.NA = { $, $$, esc, round, DUREES, durOf, SPORTS, OBJECTIFS, MATERIEL, PDJ, EVITER, DAYS, DAYS_FULL, SPORT, ZONE2, E, TPL, FOOD, BF, GOAL_FOOD, DRINK,
     lvLabel, lvIdx, sportName, sportData, sportList, variant, loadText, setsReps, restrictionNote, buildPlan, sessionMeta, activity, dailyKcal, breakfast };
 })();

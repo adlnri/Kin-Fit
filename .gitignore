@@ -13,3 +13,8 @@ KinFit-site.zip
 Thumbs.db
 .DS_Store
 .impeccable/questions/
+
+# Build output and dependencies
+dist/
+node_modules/
+.netlify/
