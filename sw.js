@@ -22,9 +22,10 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
-  // Pages: network first so a new version shows up, cached copy when offline.
+  // Pages: network first, revalidated past the browser's HTTP cache so a new version shows up at once;
+  // cached copy only when offline, and never a 404 page in its place.
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put('./index.html', copy)); return res; }).catch(() => caches.match('./index.html')));
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then((res) => { if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put('./index.html', copy)); } return res; }).catch(() => caches.match('./index.html')));
     return;
   }
   // Files: cache first (versioned URLs), then network, stored for next time.

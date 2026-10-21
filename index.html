@@ -53,7 +53,12 @@
 <script src="stickers.js?v=28"></script>
 <script src="app.js?v=28"></script>
 <script>
-  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  // Check for a new version on every launch; when it takes over, reload once so the new files show.
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => {
+    const had = !!navigator.serviceWorker.controller; let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !reloaded) { reloaded = true; location.reload(); } });
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((r) => r.update()).catch(() => {});
+  });
 </script>
 </body>
 </html>
