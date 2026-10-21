@@ -1,0 +1,15 @@
+# Netlify copy, rebuilt from the sources
+KinFit-site/
+KinFit-site.zip
+
+# Local tooling and review captures
+.claude/
+.impeccable/review/
+.impeccable/http.log
+.impeccable/serve.log
+.impeccable/wait.log
+
+# OS files
+Thumbs.db
+.DS_Store
+.impeccable/questions/

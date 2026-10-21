@@ -1,0 +1,737 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T23:37:42.083Z",
+  "title": "Design System: Kin Fit",
+  "extensions": {
+    "colorMeta": {
+      "bg": {
+        "role": "neutral",
+        "displayName": "Vitrine Black",
+        "canonical": "#0a0907",
+        "oklch": "oklch(14.0% 0.005 86.6)",
+        "tonalRamp": [
+          "#0c0b09",
+          "#252421",
+          "#41403d",
+          "#5f5d5a",
+          "#81807d",
+          "#a6a4a1",
+          "#cccac7",
+          "#f0eeeb"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail Black",
+        "canonical": "#050403",
+        "oklch": "oklch(10.8% 0.005 71.3)",
+        "tonalRamp": [
+          "#0d0b09",
+          "#262421",
+          "#413f3d",
+          "#5f5d5a",
+          "#82807d",
+          "#a7a4a1",
+          "#cdcac7",
+          "#f1eeeb"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Case Surface",
+        "canonical": "#14120e",
+        "oklch": "oklch(18.3% 0.009 84.6)",
+        "tonalRamp": [
+          "#0d0b07",
+          "#26241f",
+          "#423f3b",
+          "#605d58",
+          "#82807b",
+          "#a7a49f",
+          "#cdcac4",
+          "#f1eee8"
+        ]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Inset Surface",
+        "canonical": "#1c1914",
+        "oklch": "oklch(21.5% 0.011 80.6)",
+        "tonalRamp": [
+          "#0d0b07",
+          "#27241e",
+          "#433f3a",
+          "#615d57",
+          "#838079",
+          "#a8a49d",
+          "#cecac3",
+          "#f2eee7"
+        ]
+      },
+      "surface-3": {
+        "role": "neutral",
+        "displayName": "Deep Inset",
+        "canonical": "#27231b",
+        "oklch": "oklch(25.8% 0.016 84.5)",
+        "tonalRamp": [
+          "#0e0b05",
+          "#28241c",
+          "#443f37",
+          "#625d54",
+          "#858076",
+          "#a9a49a",
+          "#cfcabf",
+          "#f3eee3"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#322c20",
+        "oklch": "oklch(29.6% 0.022 84.4)",
+        "tonalRamp": [
+          "#100a02",
+          "#292318",
+          "#453f32",
+          "#645d50",
+          "#867f71",
+          "#aba495",
+          "#d1cabb",
+          "#f6eede"
+        ]
+      },
+      "line-2": {
+        "role": "neutral",
+        "displayName": "Brass Line",
+        "canonical": "#7d6c48",
+        "oklch": "oklch(53.8% 0.056 85.3)",
+        "tonalRamp": [
+          "#120a00",
+          "#302100",
+          "#4d3d1a",
+          "#6c5b38",
+          "#8f7e59",
+          "#b5a37d",
+          "#dbc8a2",
+          "#feedc8"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Cream",
+        "canonical": "#f6eedc",
+        "oklch": "oklch(95.1% 0.025 86.9)",
+        "tonalRamp": [
+          "#100a01",
+          "#292316",
+          "#463f31",
+          "#645d4e",
+          "#87806f",
+          "#aba493",
+          "#d2cab8",
+          "#f6eedc"
+        ]
+      },
+      "text-2": {
+        "role": "neutral",
+        "displayName": "Parchment",
+        "canonical": "#b8ab8c",
+        "oklch": "oklch(74.4% 0.045 88.0)",
+        "tonalRamp": [
+          "#120a00",
+          "#2d2306",
+          "#4a3e23",
+          "#685c40",
+          "#8b7f61",
+          "#b0a385",
+          "#d7c9aa",
+          "#fbedcd"
+        ]
+      },
+      "placeholder": {
+        "role": "neutral",
+        "displayName": "Placeholder",
+        "canonical": "#8f8468",
+        "oklch": "oklch(61.6% 0.042 89.1)",
+        "tonalRamp": [
+          "#110a00",
+          "#2c2309",
+          "#493f25",
+          "#675d42",
+          "#8a7f64",
+          "#afa487",
+          "#d5caac",
+          "#faeecf"
+        ]
+      },
+      "on-gold": {
+        "role": "neutral",
+        "displayName": "Ink on Gold",
+        "canonical": "#0a0907",
+        "oklch": "oklch(14.0% 0.005 86.6)",
+        "tonalRamp": [
+          "#0c0b09",
+          "#252421",
+          "#41403d",
+          "#5f5d5a",
+          "#81807d",
+          "#a6a4a1",
+          "#cccac7",
+          "#f0eeeb"
+        ]
+      },
+      "gold": {
+        "role": "primary",
+        "displayName": "Struck Gold",
+        "canonical": "#d4af37",
+        "oklch": "oklch(76.7% 0.139 91.1)",
+        "tonalRamp": [
+          "#110a00",
+          "#2e2300",
+          "#4f3e00",
+          "#725b00",
+          "#9c7c00",
+          "#c5a021",
+          "#ecc753",
+          "#ffeebe"
+        ]
+      },
+      "gold-hi": {
+        "role": "primary",
+        "displayName": "Gold Highlight",
+        "canonical": "#f3dc8c",
+        "oklch": "oklch(89.6% 0.103 93.9)",
+        "tonalRamp": [
+          "#100a00",
+          "#2d2300",
+          "#4d3e00",
+          "#705c00",
+          "#957f2d",
+          "#baa354",
+          "#e1ca7a",
+          "#ffeeb5"
+        ]
+      },
+      "gold-lo": {
+        "role": "primary",
+        "displayName": "Burnished Gold",
+        "canonical": "#8a6416",
+        "oklch": "oklch(52.9% 0.101 80.1)",
+        "tonalRamp": [
+          "#130900",
+          "#322000",
+          "#553a00",
+          "#7b5600",
+          "#a07930",
+          "#c69d57",
+          "#edc47c",
+          "#ffeccd"
+        ]
+      },
+      "engrave": {
+        "role": "primary",
+        "displayName": "Engraving Brown",
+        "canonical": "#3a2806",
+        "oklch": "oklch(29.1% 0.054 79.1)",
+        "tonalRamp": [
+          "#130900",
+          "#322000",
+          "#4f3c1c",
+          "#6e5a3a",
+          "#927d5b",
+          "#b7a17e",
+          "#dec7a3",
+          "#ffecce"
+        ]
+      },
+      "sport": {
+        "role": "secondary",
+        "displayName": "Ember",
+        "canonical": "#ff8a3d",
+        "oklch": "oklch(75.0% 0.167 50.5)",
+        "tonalRamp": [
+          "#1a0400",
+          "#3e1700",
+          "#662d00",
+          "#934402",
+          "#c75e02",
+          "#f48031",
+          "#feb991",
+          "#feeadf"
+        ],
+        "soft": "rgba(255, 138, 61, .14)"
+      },
+      "cardio": {
+        "role": "secondary",
+        "displayName": "Ember Rose",
+        "canonical": "#ff5d6c",
+        "oklch": "oklch(69.5% 0.196 18.5)",
+        "tonalRamp": [
+          "#200002",
+          "#4b000e",
+          "#7b001f",
+          "#b00030",
+          "#dd3c50",
+          "#ff7079",
+          "#feb4b5",
+          "#ffe8e8"
+        ],
+        "soft": "rgba(255, 93, 108, .14)"
+      },
+      "nutrition": {
+        "role": "secondary",
+        "displayName": "Lime",
+        "canonical": "#b7d96a",
+        "oklch": "oklch(83.7% 0.144 123.6)",
+        "tonalRamp": [
+          "#080e00",
+          "#1e2900",
+          "#364700",
+          "#516802",
+          "#6f8d0f",
+          "#93b343",
+          "#b8da6b",
+          "#dbff8f"
+        ],
+        "soft": "rgba(183, 217, 106, .13)"
+      },
+      "eau": {
+        "role": "secondary",
+        "displayName": "Ice",
+        "canonical": "#6fd0ea",
+        "oklch": "oklch(80.8% 0.098 217.4)",
+        "tonalRamp": [
+          "#000e13",
+          "#002933",
+          "#004857",
+          "#00697d",
+          "#238ea7",
+          "#51b4cd",
+          "#7adbf5",
+          "#d4f5ff"
+        ],
+        "soft": "rgba(111, 208, 234, .13)"
+      },
+      "amis": {
+        "role": "secondary",
+        "displayName": "Lilac",
+        "canonical": "#c9a3ff",
+        "oklch": "oklch(78.4% 0.133 302.4)",
+        "tonalRamp": [
+          "#130028",
+          "#320257",
+          "#4e2778",
+          "#6d479b",
+          "#906ac1",
+          "#b58fe9",
+          "#d6bcff",
+          "#f2ebfe"
+        ],
+        "soft": "rgba(201, 163, 255, .14)"
+      },
+      "serie": {
+        "role": "secondary",
+        "displayName": "Streak Gold",
+        "canonical": "#f2c14e",
+        "oklch": "oklch(83.4% 0.141 85.4)",
+        "tonalRamp": [
+          "#120900",
+          "#302100",
+          "#523c01",
+          "#765803",
+          "#a17900",
+          "#cc9d1c",
+          "#f4c350",
+          "#ffedc7"
+        ],
+        "soft": "rgba(212, 175, 55, .14)"
+      },
+      "metal-bronze": {
+        "role": "tertiary",
+        "displayName": "Bronze Enamel",
+        "canonical": "#d9915a",
+        "oklch": "oklch(71.8% 0.113 57.1)",
+        "tonalRamp": [
+          "#180500",
+          "#3b1a00",
+          "#623100",
+          "#8c4a07",
+          "#b26d35",
+          "#da925b",
+          "#ffb986",
+          "#feeadc"
+        ]
+      },
+      "metal-argent": {
+        "role": "tertiary",
+        "displayName": "Argent Enamel",
+        "canonical": "#c9d2de",
+        "oklch": "oklch(86.0% 0.019 255.5)",
+        "tonalRamp": [
+          "#060b13",
+          "#1e252d",
+          "#39404a",
+          "#575e69",
+          "#79818c",
+          "#9da5b1",
+          "#c2cbd7",
+          "#e6effc"
+        ]
+      },
+      "metal-or": {
+        "role": "tertiary",
+        "displayName": "Or Enamel",
+        "canonical": "#ffc93c",
+        "oklch": "oklch(86.1% 0.159 86.4)",
+        "tonalRamp": [
+          "#120a00",
+          "#302200",
+          "#513c01",
+          "#765903",
+          "#a07a00",
+          "#cd9d01",
+          "#f8c232",
+          "#ffedc5"
+        ]
+      },
+      "metal-platine": {
+        "role": "tertiary",
+        "displayName": "Platine Enamel",
+        "canonical": "#86e1ea",
+        "oklch": "oklch(85.6% 0.088 203.8)",
+        "tonalRamp": [
+          "#000e10",
+          "#002a2e",
+          "#03494f",
+          "#006b73",
+          "#2f8f98",
+          "#59b5be",
+          "#81dce5",
+          "#c7f9fe"
+        ]
+      }
+    },
+    "gradients": [
+      {
+        "name": "gold-fill",
+        "value": "linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%)",
+        "purpose": "The gold sheen: every filled gold surface (primary buttons, current nav, selected day, tab, segment, tick, choice, done badges, own chat bubble, avatar, tag, duplicate pill)."
+      },
+      {
+        "name": "gold-coin",
+        "value": "radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%)",
+        "purpose": "Face of every struck medal: owned trophy slots, celebration medal, corner-toast medal."
+      },
+      {
+        "name": "case-owned",
+        "value": "radial-gradient(120% 90% at 50% 0%, #221c10 0%, #14120e 70%)",
+        "purpose": "Faint gold glow from the top of an owned trophy slot."
+      },
+      {
+        "name": "case-celebration",
+        "value": "radial-gradient(120% 80% at 50% 0%, #2a2416 0%, #14120e 60%)",
+        "purpose": "Milestone dialog card."
+      },
+      {
+        "name": "done-wash",
+        "value": "linear-gradient(180deg, rgba(212, 175, 55, .08), #14120e 70%)",
+        "purpose": "Completed challenge card."
+      },
+      {
+        "name": "gold-rule",
+        "value": "linear-gradient(90deg, #d4af37, rgba(212, 175, 55, 0)) left bottom / 100% 1px no-repeat",
+        "purpose": "Fading gold hairline under trophy-case page titles."
+      }
+    ],
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Onboarding wordmark only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "One page heading per view."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Trophy-case page titles over a fading gold hairline."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card headings."
+      },
+      "title-sm": {
+        "displayName": "Title small",
+        "purpose": "Challenge and banner headings."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "Day numbers, macro values, big choice labels."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All running text, tabular figures."
+      },
+      "lede": {
+        "displayName": "Lede",
+        "purpose": "Intro line under a page heading, max 62ch, Parchment."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Buttons and emphasised values."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Uppercase form-control labels and weekday letters; never above a heading."
+      }
+    },
+    "shadows": [
+      {
+        "name": "case",
+        "value": "0 1px 0 rgba(255, 227, 154, .05) inset, 0 18px 40px -24px rgba(0, 0, 0, .9)",
+        "purpose": "Cards, challenge cards, rank panel."
+      },
+      {
+        "name": "lift",
+        "value": "0 2px 6px rgba(0, 0, 0, .5), 0 24px 48px -20px rgba(0, 0, 0, .95)",
+        "purpose": "Dialogs, toasts, celebration card."
+      },
+      {
+        "name": "gold-button",
+        "value": "0 1px 0 rgba(255, 255, 255, .35) inset, 0 8px 20px -10px rgba(212, 175, 55, .55)",
+        "purpose": "Primary buttons at rest."
+      },
+      {
+        "name": "gold-button-hover",
+        "value": "0 1px 0 rgba(255, 255, 255, .35) inset, 0 12px 26px -10px rgba(212, 175, 55, .7)",
+        "purpose": "Primary buttons on hover."
+      },
+      {
+        "name": "gold-halo-toast",
+        "value": "0 0 30px -12px rgba(212, 175, 55, .6)",
+        "purpose": "Added to the corner win toast."
+      },
+      {
+        "name": "gold-halo-cele",
+        "value": "0 0 60px -20px rgba(212, 175, 55, .6)",
+        "purpose": "Added to the milestone dialog card."
+      },
+      {
+        "name": "struck-coin",
+        "value": "inset 0 0 0 3px rgba(255, 240, 190, .5), inset 0 0 0 8px rgba(78, 54, 8, .35), inset 0 -10px 18px rgba(78, 54, 8, .35), 0 12px 26px -12px rgba(0, 0, 0, .95)",
+        "purpose": "Rim and shaded face of an owned medal."
+      },
+      {
+        "name": "struck-coin-rare",
+        "value": "inset 0 0 0 3px rgba(255, 240, 190, .6), inset 0 0 0 8px rgba(78, 54, 8, .35), inset 0 -10px 18px rgba(78, 54, 8, .35), 0 0 0 3px #14120e, 0 0 0 4px rgba(243, 220, 140, .8), 0 12px 26px -12px rgba(0, 0, 0, .95)",
+        "purpose": "Rare medal: adds a pale-gold outer ring."
+      },
+      {
+        "name": "shield-glow",
+        "value": "drop-shadow(0 0 14px rgba(212, 175, 55, .35))",
+        "purpose": "Filter on owned rank shields."
+      },
+      {
+        "name": "focus-ring-field",
+        "value": "0 0 0 3px rgba(212, 175, 55, .2)",
+        "purpose": "Focused input, alongside a gold border."
+      },
+      {
+        "name": "focus-outline",
+        "value": "outline: 2px solid #d4af37; outline-offset: 3px",
+        "purpose": "Global :focus-visible."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Colour, border, meter and fade transitions."
+      },
+      {
+        "name": "snap",
+        "value": "cubic-bezier(.22, 1, .36, 1)",
+        "purpose": "Transforms: button lift and press, day lift, tick and choice scale, dialog pop, mint."
+      },
+      {
+        "name": "mint",
+        "value": "@keyframes stick { 0% { opacity: 0; transform: scale(1.35); filter: blur(8px) brightness(2); } 55% { opacity: 1; transform: scale(.97); filter: blur(0) brightness(1.4); } 100% { transform: scale(1); filter: none; } }",
+        "purpose": "A medal arriving: .8s in the dialog, .7s in the corner toast, .9s on the loading screen."
+      },
+      {
+        "name": "pop",
+        "value": "@keyframes pop { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }",
+        "purpose": "Dialog open (.35s) and card entrance on view render (.5s, staggered 70ms)."
+      },
+      {
+        "name": "rise",
+        "value": "translateY(16px) to 0 with fade, .35-.4s",
+        "purpose": "Toasts entering."
+      },
+      {
+        "name": "sparks",
+        "value": "canvas, additive blend; heat by life >.82 rgb(255,250,236), >.55 rgb(255,221,140), >.3 rgb(222,170,58), else rgb(196,92,28); drag .978/frame, gravity .2; trail 7 points as 6x-wide 12% glow plus core; sine flicker .7-1; about 35% of primary sparks branch into 3 at life .6",
+        "purpose": "Win burst: 150 sparks plus two 60-spark side bursts 220ms later for a milestone; 60 at force .6 for a corner toast."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce disables all animations and transitions and skips sparks",
+        "purpose": "Accessibility floor."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stack",
+        "value": "1180px",
+        "purpose": "Today grid to one column; daily challenges wrap at 240px."
+      },
+      {
+        "name": "mobile",
+        "value": "820px",
+        "purpose": "Rail becomes a bottom bar; brand bar appears; chips scroll."
+      }
+    ],
+    "layout": {
+      "railWidth": "236px",
+      "mainPadding": "clamp(20px, 3vw, 40px)",
+      "mobileMainPadding": "18px 16px 104px"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Gold-sheen pill for the next action on any view.",
+      "html": "<button class=\"ds-btn\">Valider la séance</button>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border:1px solid transparent;border-radius:999px;background:var(--gold-fill);color:var(--on);font-family:var(--body);font-weight:800;font-size:1rem;box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 8px 20px -10px rgba(212,175,55,.55);transition:transform .2s var(--snap),box-shadow .2s var(--ease);cursor:pointer}.ds-btn:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 12px 26px -10px rgba(212,175,55,.7)}.ds-btn:active{transform:translateY(1px) scale(.98)}.ds-btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action: transparent pill with a brass line.",
+      "html": "<button class=\"ds-btn-ghost\">Plus tard</button>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-btn-ghost{min-height:46px;padding:0 20px;border:1px solid var(--line-2);border-radius:999px;background:transparent;color:var(--text);font-family:var(--body);font-weight:800;font-size:1rem;cursor:pointer;transition:background .2s var(--ease)}.ds-btn-ghost:hover{background:var(--surface-2)}.ds-btn-ghost:focus-visible{outline:2px solid var(--gold);outline-offset:3px}"
+    },
+    {
+      "name": "Category Button",
+      "kind": "button",
+      "refersTo": "button-category",
+      "description": "A challenge action drawn in its category colour (sport shown); hover takes the category wash.",
+      "html": "<button class=\"ds-btn-cat\">Finir la séance</button>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-btn-cat{--c:var(--sport);--s:var(--sport-soft);min-height:46px;padding:0 20px;border:1px solid var(--c);border-radius:999px;background:transparent;color:var(--c);font-family:var(--body);font-weight:800;font-size:1rem;cursor:pointer;transition:background .2s var(--ease)}.ds-btn-cat:hover{background:var(--s)}.ds-btn-cat:focus-visible{outline:2px solid var(--gold);outline-offset:3px}"
+    },
+    {
+      "name": "Navigation Rail",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Black rail; current destination filled with gold sheen.",
+      "html": "<nav class=\"ds-rail\"><p class=\"ds-wm\">Kin Fit</p><button class=\"ds-nav\" aria-current=\"page\">Aujourd’hui</button><button class=\"ds-nav\">Défis</button><button class=\"ds-nav\">Trophées</button></nav>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-rail{display:grid;gap:4px;width:236px;padding:26px 16px;background:#050403;border-right:1px solid var(--line)}.ds-wm{margin:0 0 26px;padding:0 10px;font-family:var(--display);font-weight:600;font-size:1.45rem;color:var(--gold)}.ds-nav{display:flex;width:100%;padding:11px 14px;border:0;border-radius:999px;background:none;color:var(--text-2);font-family:var(--body);font-weight:700;font-size:1rem;text-align:left;cursor:pointer}.ds-nav:not([aria-current]):hover{background:var(--surface-2);color:var(--text)}.ds-nav[aria-current=\"page\"]{background:var(--gold-fill);color:var(--on)}.ds-nav:focus-visible{outline:2px solid var(--gold);outline-offset:3px}"
+    },
+    {
+      "name": "Score Chips",
+      "kind": "chip",
+      "refersTo": "score-chip",
+      "description": "Points and invitation chips in the greeting.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-score\"><b>340</b><small>points</small></span><button class=\"ds-score ds-score--inbox\">2 invitations</button></div>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-row{display:flex;gap:8px}.ds-score{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--text);font-family:var(--body);font-weight:600;font-size:1rem;font-variant-numeric:tabular-nums}.ds-score b{font-weight:800;font-size:1.0625rem}.ds-score small{color:var(--text-2);font-weight:500}.ds-score--inbox{color:var(--amis);border-color:rgba(201,163,255,.45);cursor:pointer;transition:transform .2s var(--snap)}.ds-score--inbox:hover{transform:translateY(-1px)}.ds-score--inbox:focus-visible{outline:2px solid var(--gold);outline-offset:3px}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Inset field with a brass line; gold border and ring on focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Ton prénom\">",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-input{width:100%;min-height:50px;padding:10px 16px;border:1px solid var(--line-2);border-radius:14px;background:var(--surface-2);color:var(--text);font-family:var(--body);font-size:1rem;transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}.ds-input::placeholder{color:#8f8468}.ds-input:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(212,175,55,.2)}"
+    },
+    {
+      "name": "Challenge Card",
+      "kind": "card",
+      "refersTo": "challenge-card",
+      "description": "Daily challenge: tinted icon tile, Sora title, points pill, category meter.",
+      "html": "<article class=\"ds-defi\"><span class=\"ds-badge\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9 17h6\"/></svg></span><div class=\"ds-body\"><div class=\"ds-top\"><h3>Séance du jour</h3><span class=\"ds-pts\">+30 pts</span></div><p class=\"ds-desc\">Coche chaque exercice.</p><div class=\"ds-meter\"><i></i></div></div></article>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-defi{--c:var(--sport);display:grid;grid-template-columns:54px minmax(0,1fr);gap:14px;max-width:360px;padding:18px;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 0 rgba(255,227,154,.05) inset,0 18px 40px -24px rgba(0,0,0,.9);color:var(--text);font-family:var(--body)}.ds-badge{display:grid;place-items:center;width:54px;height:54px;border-radius:16px;background:var(--surface-2);color:var(--c);border:1px solid var(--line)}.ds-body{display:grid;gap:8px}.ds-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.ds-top h3{margin:0;font-family:var(--display);font-weight:600;font-size:1rem}.ds-pts{font-weight:700;font-size:.8125rem;padding:2px 10px;border-radius:999px;border:1px solid var(--line);color:var(--gold-hi)}.ds-desc{margin:0;color:var(--text-2);font-size:.9375rem}.ds-meter{height:6px;border-radius:999px;background:var(--surface-3);overflow:hidden}.ds-meter i{display:block;height:100%;width:60%;background:var(--c);border-radius:inherit}"
+    },
+    {
+      "name": "Struck Medal and Locked Coin",
+      "kind": "custom",
+      "refersTo": "medal-owned",
+      "description": "Trophy-case slots: an owned medal struck in gold with engraved line art, beside a locked dark coin with its number.",
+      "html": "<div class=\"ds-slots\"><figure class=\"ds-stk is-owned\"><span class=\"ds-art\"><svg width=\"56\" height=\"56\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M9 17h6\"/></svg></span><figcaption>Première séance</figcaption></figure><figure class=\"ds-stk\"><span class=\"ds-art ds-art--empty\"><b>07</b></span><figcaption>Semaine complète</figcaption></figure></div>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-slots{display:grid;grid-template-columns:repeat(2,150px);gap:18px}.ds-stk{margin:0;display:grid;justify-items:center;gap:12px;padding:18px 10px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);font-family:var(--body)}.ds-art{width:76%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center}.ds-stk.is-owned{background:radial-gradient(120% 90% at 50% 0%,#221c10 0%,var(--surface) 70%);border-color:rgba(212,175,55,.3)}.ds-stk.is-owned .ds-art{background:var(--gold-coin);color:#3a2806;box-shadow:inset 0 0 0 3px rgba(255,240,190,.5),inset 0 0 0 8px rgba(78,54,8,.35),inset 0 -10px 18px rgba(78,54,8,.35),0 12px 26px -12px rgba(0,0,0,.95);animation:ds-mint .8s var(--snap) both}.ds-art--empty{background:var(--surface-2);border:1px dashed var(--line-2)}.ds-art--empty b{font-family:var(--display);font-size:1.5rem;font-weight:600;color:var(--line-2)}.ds-stk figcaption{text-align:center;font-weight:700;font-size:.9375rem;color:var(--text-2)}.ds-stk.is-owned figcaption{color:var(--text)}@keyframes ds-mint{0%{opacity:0;transform:scale(1.35);filter:blur(8px) brightness(2)}55%{opacity:1;transform:scale(.97);filter:blur(0) brightness(1.4)}100%{transform:scale(1);filter:none}}@media (prefers-reduced-motion:reduce){.ds-stk.is-owned .ds-art{animation:none}}"
+    },
+    {
+      "name": "Rank Shield",
+      "kind": "custom",
+      "refersTo": "score-chip",
+      "description": "Enamel pin rank badge (Or shown) with ink outline, inner rim and stars.",
+      "html": "<figure class=\"ds-patch\"><svg viewBox=\"0 0 100 110\" width=\"72\" aria-hidden=\"true\"><g stroke=\"#14110b\" stroke-width=\"3.5\" stroke-linejoin=\"round\" stroke-linecap=\"round\"><path d=\"M50 6l38 12v34c0 26-18 44-38 52C30 96 12 78 12 52V18z\" fill=\"#ffc93c\"/><path d=\"M50 16l28 9v27c0 20-13 34-28 41-15-7-28-21-28-41V25z\" fill=\"none\" stroke-width=\"2.5\"/><polygon points=\"34.0,46.0 36.1,51.1 41.6,51.5 37.4,55.1 38.7,60.5 34.0,57.6 29.3,60.5 30.6,55.1 26.4,51.5 31.9,51.1\" fill=\"#fff6e2\"/><polygon points=\"50.0,46.0 52.1,51.1 57.6,51.5 53.4,55.1 54.7,60.5 50.0,57.6 45.3,60.5 46.6,55.1 42.4,51.5 47.9,51.1\" fill=\"#fff6e2\"/><polygon points=\"66.0,46.0 68.1,51.1 73.6,51.5 69.4,55.1 70.7,60.5 66.0,57.6 61.3,60.5 62.6,55.1 58.4,51.5 63.9,51.1\" fill=\"#fff6e2\"/></g></svg><figcaption>Or</figcaption></figure>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-patch{margin:0;display:grid;justify-items:center;gap:4px;width:84px;font-family:var(--body)}.ds-patch svg{display:block;filter:drop-shadow(0 0 14px rgba(212,175,55,.35))}.ds-patch figcaption{font-weight:800;font-size:.875rem;color:var(--text)}"
+    },
+    {
+      "name": "Corner Win Toast",
+      "kind": "custom",
+      "refersTo": "medal-owned",
+      "description": "Non-blocking routine-win toast with a gold coin and gold halo.",
+      "html": "<div class=\"ds-toast\" role=\"status\"><span class=\"ds-medal\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12l5 5 9-10\"/></svg></span><p><b>Eau : 8 verres</b><span>+10 points</span></p></div>",
+      "css": ":host{--bg:#0a0907;--surface:#14120e;--surface-2:#1c1914;--surface-3:#27231b;--line:#322c20;--line-2:#7d6c48;--text:#f6eedc;--text-2:#b8ab8c;--on:#0a0907;--gold:#d4af37;--gold-hi:#f3dc8c;--gold-lo:#8a6416;--sport:#ff8a3d;--sport-soft:rgba(255,138,61,.14);--amis:#c9a3ff;--cardio:#ff5d6c;--gold-fill:linear-gradient(135deg, #7a5612 0%, #c9a033 18%, #f6e3a1 34%, #d4af37 48%, #9a7219 66%, #e2c063 84%, #a8812a 100%);--gold-coin:radial-gradient(circle at 34% 28%, #fff4c4 0%, #ecd06e 18%, #d4af37 38%, #a8812a 62%, #6b4a0c 88%, #4e3608 100%);--snap:cubic-bezier(.22,1,.36,1);--ease:cubic-bezier(.16,1,.3,1);--display:\"Sora\",\"Manrope\",system-ui,sans-serif;--body:\"Manrope\",system-ui,sans-serif;} .ds-toast{display:flex;align-items:center;gap:14px;max-width:360px;padding:12px 18px 12px 12px;border-radius:20px;background:var(--surface-2);border:1px solid var(--gold-lo);color:var(--text);font-family:var(--body);box-shadow:0 2px 6px rgba(0,0,0,.5),0 24px 48px -20px rgba(0,0,0,.95),0 0 30px -12px rgba(212,175,55,.6);animation:ds-rise .4s var(--ease)}.ds-medal{display:grid;place-items:center;width:48px;height:48px;flex:none;border-radius:50%;background:var(--gold-coin);color:#3a2806}.ds-toast p{margin:0;display:grid;gap:2px}.ds-toast span:last-child{color:var(--gold);font-weight:800;font-size:.875rem}@keyframes ds-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.ds-toast{animation:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Medal Vitrine",
+    "overview": "Kin Fit is a dark, quiet case lit by one metal. Every surface is near-black with a warm undertone (#0a0907 page, #14120e cards), bounded by a single hairline, and the only thing allowed to shine is gold: the action you should take next, the thing you selected, the challenge you finished, your rank, and the medals you have struck. Training and nutrition categories never compete with that shine; they sit as tinted line icons, outlines and small dots, so a screen reads as black, cream text, and gold.\n\nWinning is the one loud moment. A medal is minted on screen (it arrives oversized and blurred, flashes bright, and settles sharp) and a canvas burst of real sparks fires from it: white-hot heads that cool to gold and then ember, with trails, flicker, gravity and branching. A routine win gets the same metal at a smaller scale, in a corner toast that never blocks the page. Between wins the interface is calm, dense and tabular, an Operate-mode tool for ticking exercises, logging breakfast and water, and daring a friend.\n\nPremium, not childish: the sticker-album idea survives as a trophy case of coins and enamel shields, not as colourful tiles. Display type is Sora, text is Manrope, both self-hosted; no raster assets ship.",
+    "keyCharacteristics": [
+      "Near-black warm surfaces in three tonal steps, separated by 1px hairlines rather than shadows.",
+      "Metallic gold, rendered as a gradient sheen, is the single filled accent.",
+      "Category colours as strokes, outlines, dots, meters and 13-14% washes, never as filled tiles.",
+      "Medals are struck gold coins with engraved line art; locked slots are dark coins with a number; ranks are enamel shields.",
+      "Pill and circle controls; rounded-rectangle containers.",
+      "One celebration grammar: the mint animation plus gold sparks; reduced motion removes both."
+    ],
+    "rules": [
+      {
+        "name": "The Struck Gold Rule",
+        "body": "Gold is the only filled accent. It marks the next action, the current selection, completion, rank and medals, and nothing else; if a fill is not one of those, it stays on a black surface.",
+        "section": "colors"
+      },
+      {
+        "name": "The Quiet Category Rule",
+        "body": "Category colours draw icons, outlines, 6-9px dots, meters and 13-14% washes. Their only solid fills are small marks (count badges of 22px or less, meter and macro bars, step checks); never a card, tile, button or background.",
+        "section": "colors"
+      },
+      {
+        "name": "The Medal Lettering Rule",
+        "body": "Sora is for headings and big numerals only; anything you read in a sentence or press in a control is Manrope.",
+        "section": "typography"
+      },
+      {
+        "name": "The Only-Gold-Glows Rule",
+        "body": "Coloured light is gold light. No category colour casts a glow, and nothing uses a hard offset shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Pill and Coin Rule",
+        "body": "Controls are pills or circles, containers are rounded rectangles, rewards are coins and shields. Do not mix the vocabularies.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do use the gold sheen gradient for every filled gold surface and flat #d4af37 only for outlines, strokes, meters and text.",
+      "Do separate every surface with a 1px Hairline (#322c20), or Brass Line (#7d6c48) for controls that need to be found.",
+      "Do draw categories as a coloured line icon on an Inset Surface tile, a coloured outline, or a 6-9px dot.",
+      "Do present rewards as coins and shields: owned medals struck in gold with Engraving Brown line art, locked slots as dark dashed coins with their number.",
+      "Do set numbers with tabular figures, and big numerals in Sora 700.",
+      "Do keep the mint animation and sparks for wins only, route routine wins to the corner toast, and remove both under prefers-reduced-motion."
+    ],
+    "donts": [
+      "Don't fill a card, tile, button or background with a category colour.",
+      "Don't let anything glow that is not gold, and don't use hard offset shadows.",
+      "Don't put an uppercase label or eyebrow above a heading; the uppercase label style is for form controls and weekdays.",
+      "Don't ship raster medal or badge art; medals are SVG line art recoloured by CSS, ranks are SVG shields.",
+      "Don't use square corners on a control or a pill on a container.",
+      "Don't block the page for a routine win; the full-screen dialog is for new medals and milestones."
+    ]
+  }
+}

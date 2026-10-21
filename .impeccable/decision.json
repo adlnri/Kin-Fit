@@ -1,0 +1,128 @@
+{
+  "title": "Choose the visual world",
+  "question": "The roll assigned Affiche Fluo for your AI sport and nutrition coach. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Affiche Fluo",
+      "kicker": "THE ROLL",
+      "lineage": "French club gala and tournament posters on dayglo paper",
+      "thesis": "Your programme printed like the poster for your own gala: loud paper, black ink, you on the bill.",
+      "palette": ["#EDFF2F", "#FF4D9D", "#2BE58A", "#FF7A1A", "#14130F", "#FBFAF4"],
+      "materials": ["dayglo paper stocks", "heavy condensed black type", "thick printed rules"],
+      "viewport": "Left rail (Aujourd'hui, Programme, Nutrition, Coach, Profil) in black; the day's session fills a yellow sheet as a billed card of exercises; breakfast sits beside it on pink stock; the coach's adjustments on green.",
+      "risk": "Four fluo stocks can shout over the data if every panel is coloured at once.",
+      "raised": [
+        { "from": "challenger-specimen", "raise": "One niveau slider re-sets every load and rep count on the sheet live, not exercise by exercise." },
+        { "from": "challenger-orienteering", "raise": "Each paper colour means one thing everywhere: yellow training, pink nutrition, orange cardio, green coach." },
+        { "from": "challenger-folio", "raise": "Weeks compare on one fixed scale, so progress is read by eye, never by relabelled axes." },
+        { "from": "challenger-saville", "raise": "Nothing is labelled twice: the stock colour replaces the section title wherever it can." }
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "Feuille de Match",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Federation match sheets in carbonless triplicate",
+      "thesis": "The programme as the official sheet of your own match: every box filled, signed by the coach.",
+      "palette": ["#F7F6F1", "#F6C9D6", "#F8EC9A", "#1F3FAE", "#1A1A1A"],
+      "materials": ["carbonless copy paper", "ballpoint blue", "ruled boxes"],
+      "viewport": "Top bar with the user's licence-style profile strip; the session as a ruled roster table of exercises; nutrition as the pink copy beneath.",
+      "risk": "Quiet and administrative; closest to what a tidy fitness dashboard already looks like."
+    },
+    {
+      "id": "challenger-transit",
+      "label": "Midnight Transit Diagram",
+      "verdict": "competitive",
+      "lineage": "Enamel metropolitan rail maps",
+      "thesis": "The week as lines: training, cardio and meals run in parallel and interchange where one changes another.",
+      "palette": ["#0E1B3D", "#F4F2EA", "#E5352B", "#2B6BE5", "#F2A81D", "#27A567"],
+      "materials": ["midnight enamel", "porcelain station ticks", "45 and 90 degree lines"],
+      "viewport": "Top bar; a week diagram of three coloured lines across the screen with today's station open below as the session and breakfast detail.",
+      "case": "Shows the linked-plan mechanism better than any other card; athletes identify with it less than with their own club's poster.",
+      "risk": "A dark diagram leading the screen can push the actual exercises below the fold.",
+      "hero": "https://impeccable.style/worlds/cards/wayfinding-cartography-signage-midnight-transit-diagram-hero.webp"
+    },
+    {
+      "id": "challenger-warm",
+      "label": "Warm Consumer App",
+      "verdict": "competitive",
+      "lineage": "Friendly consumer app surfaces",
+      "thesis": "Soft cards on a warm ground, and the one bright colour is always something you can press.",
+      "palette": ["#F5EDE3", "#FFFFFF", "#2A2420", "#FF5A1F"],
+      "materials": ["large soft radii", "rounded humanist sans", "persistent bottom bar"],
+      "viewport": "Single column of cards: today's session, breakfast, coach note; bottom bar with five tabs.",
+      "case": "Clearest for a first-time beginner; says nothing about sport and could be any wellness app.",
+      "risk": "Pleasant and forgettable; indistinguishable from a meditation or budgeting app.",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-warm-consumer-app-surface-hero.webp"
+    },
+    {
+      "id": "challenger-specimen",
+      "label": "Variable Type Specimen",
+      "verdict": "declined",
+      "lineage": "Interactive foundry specimens",
+      "thesis": "One slider morphs the whole grid.",
+      "palette": ["#FAFAF7", "#111111", "#2F4BFF"],
+      "materials": ["ink on paper", "axis sliders"],
+      "viewport": "A giant figure with sliders beneath.",
+      "case": "A type foundry's world; athletes do not see themselves in it and exercises are not glyphs.",
+      "kept": "One control that remaps everything continuously.",
+      "risk": "Reads as a design tool.",
+      "hero": "https://impeccable.style/worlds/cards/variable-font-specimen-hero.webp"
+    },
+    {
+      "id": "challenger-orienteering",
+      "label": "Orienteering Map",
+      "verdict": "declined",
+      "lineage": "ISOM orienteering maps",
+      "thesis": "Terrain is fixed colour; the course rides over it in purple.",
+      "palette": ["#FFFFFF", "#F6D34A", "#8FAE4B", "#B5651D", "#3F8FD6", "#A626AA"],
+      "materials": ["ISOM inks", "contour lines"],
+      "viewport": "A map window around the current leg.",
+      "case": "Belongs to one niche sport outside the seven listed; a map adds nothing to a strength session.",
+      "kept": "A colour legend whose meanings never move.",
+      "risk": "Decorative cartography.",
+      "hero": "https://impeccable.style/worlds/cards/notation-diagram-systems-orienteering-map-hero.webp"
+    },
+    {
+      "id": "challenger-folio",
+      "label": "Botanical Folio",
+      "verdict": "declined",
+      "lineage": "Seasonal botanical plates",
+      "thesis": "Five plates on one stem at one scale.",
+      "palette": ["#F3ECDB", "#6B5A3E", "#3F7A3A", "#C8281E", "#1B1A17"],
+      "materials": ["cream plates", "sepia hairlines"],
+      "viewport": "Five aligned plates across the screen.",
+      "case": "Slow, contemplative and bookish where the product must feel like training.",
+      "kept": "Stages compared at one fixed scale.",
+      "risk": "Reads as a herbal tea brand.",
+      "hero": "https://impeccable.style/worlds/cards/editorial-sequence-montage-botanical-folio-season-hero.webp"
+    },
+    {
+      "id": "challenger-saville",
+      "label": "Factory Catalog Sleeve",
+      "verdict": "declined",
+      "lineage": "Factory Records catalog identity",
+      "thesis": "Everything is a numbered entry; colour blocks stand in for words.",
+      "palette": ["#0C0C0C", "#F2F2F2", "#E0372B", "#2D62D6", "#F0C020"],
+      "materials": ["matte black", "white hairline plot"],
+      "viewport": "A black field with one plot and a number.",
+      "case": "Hides labels by design, which contradicts a product whose promise is to explain every choice.",
+      "kept": "Nothing labelled twice.",
+      "risk": "Cryptic.",
+      "hero": "https://impeccable.style/worlds/cards/brand-identity-canon-saville-catalog-sleeve-hero.webp"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code" },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "The dark fitness app: black ground, one neon accent, progress rings and rounded cards.",
+    "palette": ["#0B0C0F", "#1A1C22", "#FFFFFF", "#C6FF3D"],
+    "materials": ["dark cards", "progress rings", "geometric sans"],
+    "viewport": "Greeting, three ring stats, today's workout card, meal card, bottom tab bar.",
+    "risk": "Indistinguishable from the competition by design."
+  },
+  "steer": true
+}
