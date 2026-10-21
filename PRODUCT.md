@@ -96,4 +96,6 @@ The user asked for healthy breakfast, lunch and dinner dishes plus cheat meals, 
 
 ## AI (added 2026-10-21)
 
-- A Netlify Function (`/api/ai`) calls Claude with the user's coach and nutrition prompts and returns schema-checked JSON: one request per strength session, one for cardio and recovery, one for the day's meals, and short coach replies. The API key lives only in Netlify's environment. Without the function (GitHub Pages, offline) the app keeps its authored examples, and every AI result is labelled as written by the AI coach.
+- The publisher must not pay for AI (user, 2026-10-21: "il ne faut pas utiliser mon compte claude"). Each user picks a source in Profil › Coach IA, stored per device: none (default, authored examples), Gemini with their own Google AI Studio key (programmes, meals and coach, called from the browser), or an on-device open model through WebLLM (coach replies only). An optional Claude server function exists but stays inert without a publisher key.
+- The same coach and nutrition prompts (ai-core.mjs) drive every source; outputs are schema-checked JSON. Every AI result is labelled as written by the AI coach; on any failure the app keeps its examples.
+- Gemini terms surfaced in the app: 18+ only (disabled under 18), free-tier data may be used by Google and reviewed by people, and in the EEA/UK/Switzerland Google requires a billing-enabled account for this use, billed to the user's own Google account.

@@ -889,7 +889,7 @@
     if (ui.planTab === 'nutrition') {
       const item = buildPlan(sess).byDay(todayIdx);
       const nut = sess.ai && sess.ai.nut && sess.ai.nut.date === iso(TODAY) ? sess.ai.nut : null;
-      const nutBtns = AI.ready ? `<div class="actions"><button type="button" class="btn" data-act="ai-nut"${ui.aiBusy ? ' disabled' : ''}>${icon('star')}${nut ? 'Réécrire avec l’IA' : 'Ma journée avec l’IA'}</button>${nut ? '<button type="button" class="btn btn--ghost" data-act="ai-nut-clear">Version exemple</button>' : ''}</div>` : '';
+      const nutBtns = AI.can('nutrition') ? `<div class="actions"><button type="button" class="btn" data-act="ai-nut"${ui.aiBusy ? ' disabled' : ''}>${icon('star')}${nut ? 'Réécrire avec l’IA' : 'Ma journée avec l’IA'}</button>${nut ? '<button type="button" class="btn btn--ghost" data-act="ai-nut-clear">Version exemple</button>' : ''}</div>` : '';
       const today = ui.aiBusy === 'nut' ? aiBusyCard('Le coach IA prépare tes repas du jour. Compte une vingtaine de secondes.')
         : nut ? aiNutritionCards(nut, sess) : breakfastCard(sess, item, lg(sess, iso(TODAY)), { full: true, readOnly: true });
       return `<header class="hello"><div><h1 class="h1">Nutrition</h1><p class="lede">Besoin estimé : ${dailyKcal(p)} kcal par jour. Petit-déjeuner 25 %, déjeuner 35 %, dîner 30 %, collation 10 %, ajustés selon que tu t’entraînes ou non.</p></div>${nutBtns}</header>${tabs}
@@ -903,12 +903,12 @@
     }
     const plan = buildPlan(sess);
     const prog = sess.ai && sess.ai.prog;
-    const aiBtns = AI.ready ? `<button type="button" class="btn" data-act="ai-prog"${ui.aiBusy ? ' disabled' : ''}>${icon('star')}${prog ? 'Réécrire avec l’IA' : 'Générer avec l’IA'}</button>${prog ? '<button type="button" class="btn btn--ghost" data-act="ai-prog-clear">Version exemple</button>' : ''}` : '';
+    const aiBtns = AI.can('programme') ? `<button type="button" class="btn" data-act="ai-prog"${ui.aiBusy ? ' disabled' : ''}>${icon('star')}${prog ? 'Réécrire avec l’IA' : 'Générer avec l’IA'}</button>${prog ? '<button type="button" class="btn btn--ghost" data-act="ai-prog-clear">Version exemple</button>' : ''}` : '';
     const cards = prog
       ? [...prog.seances.map((x) => ({ day: x.day, html: aiSessionCard(x) })), ...prog.cardio.map((x) => ({ day: x.day ?? 9, html: aiCardioCard(x) }))].sort((a, b) => a.day - b.day).map((x) => x.html).join('') + aiRecoCard(prog.recuperation)
       : plan.items.map((it) => (it.kind === 'muscu' ? sessionCard(it, sess) : cardioCard(it, sess))).join('') + recoCard(sess, 'Récupération et conseils');
     return `<header class="hello"><div><h1 class="h1">Programme sportif</h1><p class="lede">${OBJECTIFS[p.objectif]} · ${esc(sportList(p))} · ${prog ? 'coach IA' : `version ${sess.seed + 1}`}</p></div>
-      <div class="actions">${aiBtns}${prog ? '' : `<button type="button" class="btn${AI.ready ? ' btn--ghost' : ''}" data-act="regen">Régénérer</button>`}<button type="button" class="btn btn--ghost" data-act="print">Imprimer</button></div></header>${tabs}
+      <div class="actions">${aiBtns}${prog ? '' : `<button type="button" class="btn${AI.can('programme') ? ' btn--ghost' : ''}" data-act="regen">Régénérer</button>`}<button type="button" class="btn btn--ghost" data-act="print">Imprimer</button></div></header>${tabs}
       <div class="stack">
         <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Profil résumé</h2></div></header>${profileFacts(p, false)}${prog ? '' : `${levelControl(p)}${durControl(p)}<p class="hint">Niveau et durée recalculent les charges, les séries et le nombre d’exercices de toutes les séances.</p>`}</article>
         ${ui.aiBusy === 'prog' ? aiBusyCard('Le coach IA écrit tes séances, une par une. Compte environ 30 secondes.') : ''}
@@ -920,7 +920,7 @@
   function viewCoach(sess) {
     const msgs = sess.chat.length
       ? sess.chat.map((m) => (m.pending
-        ? '<div class="msg msg--wait" aria-busy="true"><b>Coach</b><span class="ai-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">Le coach écrit</span></div>'
+        ? '<div class="msg msg--wait" aria-busy="true"><b>Coach</b><span class="ai-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">Le coach écrit</span><small class="wait-note" aria-live="polite"></small></div>'
         : `<div class="msg${m.me ? ' msg--me' : ''}"><b>${m.me ? 'Toi' : 'Coach'}</b>${m.ai ? ai(m.t) : esc(m.t)}</div>`)).join('')
       : '<p class="empty">Aucun message pour l’instant. Essaie : « Par quoi remplacer le squat ? », « J’ai faim le soir », « Je suis fatigué aujourd’hui ».</p>';
     return `<header class="hello"><div><h1 class="h1">Ton coach</h1><p class="lede">${AI.ready ? 'Pose une question sur ta séance, ton assiette ou tes défis. Le coach IA répond à partir de ton profil.' : 'Pose une question sur ta séance, ton assiette ou tes défis. Les réponses de ce prototype sont écrites à l’avance.'}</p></div></header>
@@ -945,6 +945,54 @@
     return `<article class="card"><header class="card-head"><span class="chip-ico">${icon('home')}</span><div><h2 class="h2">Installer l’app</h2></div></header>${body}</article>`;
   }
 
+  /* ---------- Coach IA settings (per device) ---------- */
+
+  const AI_ERR = {
+    bad_key: 'Google refuse cette clé. Vérifie que tu l’as copiée en entier, sans espace.',
+    forbidden: 'Google refuse l’accès avec cette clé : région, facturation ou projet non autorisé. Vérifie ton compte sur Google AI Studio.',
+    rate_limited: 'Quota gratuit atteint pour le moment. Réessaie dans quelques minutes.',
+    model: 'Le modèle Gemini prévu n’est pas disponible pour cette clé.',
+    network: 'Pas de connexion à Google. Vérifie ta connexion Internet.',
+    timeout: 'Google met trop de temps à répondre. Réessaie.',
+    webgpu: 'Ton navigateur ne permet pas encore l’IA sur l’appareil (WebGPU indisponible). Essaie Chrome ou Edge récents.',
+    local: 'Le téléchargement du modèle a échoué. Vérifie ta connexion et l’espace libre, puis réessaie.',
+  };
+  const aiErr = (e) => AI_ERR[e && e.code] || 'Ça n’a pas marché. Réessaie dans un moment.';
+  const localProgress = (r) => `Chargement du modèle sur ton appareil : ${Math.round((r.progress || 0) * 100)} %`;
+
+  function aiSettingsCard(sess) {
+    const c = AI.config; const cur0 = AI.provider;
+    const pick = ui.aiPick || (c.provider && c.provider !== 'server' ? c.provider : cur0);
+    const minor = +sess.profile.age < 18;
+    const opt = (v, title, desc, dis) => `<label class="choice choice--block"><input type="radio" name="aiprov" value="${v}"${pick === v ? ' checked' : ''}${dis ? ' disabled' : ''}><span><b>${title}</b><small>${desc}</small></span></label>`;
+    const now = { none: 'sans IA, exemples de l’app', gemini: 'Gemini, avec ta clé', local: 'IA sur ton appareil (coach)', server: 'serveur Kin Fit' }[cur0];
+    const gemini = `<form id="gemini-form" class="ai-block" novalidate>
+        <ol class="ai-steps"><li>Ouvre <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> avec ton compte Google.</li><li>Touche « Create API key », puis copie la clé.</li><li>Colle-la ici et touche Connecter. Kin Fit vérifie qu’elle marche.</li></ol>
+        <div class="field"><label for="gemini-key">Ta clé Gemini</label><input class="input" id="gemini-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${c.key ? 'Clé enregistrée sur cet appareil' : 'Colle ta clé ici'}"></div>
+        <div class="actions"><button type="submit" class="btn">${c.key ? 'Changer de clé' : 'Connecter'}</button>${c.key ? '<button type="button" class="btn btn--ghost" data-act="gemini-forget">Retirer la clé</button>' : ''}</div>
+        <p class="hint ai-status" id="gemini-status" role="status">${cur0 === 'gemini' ? 'Gemini est connecté sur cet appareil.' : ''}</p>
+        <div class="note ai-terms"><p><b>À savoir avant de connecter.</b> Ton profil (âge, taille, poids, objectif, sport, restrictions, alimentation) part directement de ton appareil vers Google, avec ta clé. Kin Fit ne voit ni ta clé ni les réponses.</p>
+          <p>Avec l’offre gratuite, Google peut utiliser ces échanges pour améliorer ses services et les faire relire par des personnes : n’écris pas de détails médicaux.</p>
+          <p>Google réserve son API aux 18 ans et plus. Dans l’Union européenne, au Royaume-Uni et en Suisse, il demande un compte Google avec facturation activée pour ce type d’usage : l’éventuel coût est alors facturé sur ton compte Google, jamais par Kin Fit.</p>
+          <p>La clé reste enregistrée sur cet appareil. Sur un appareil partagé, retire-la après usage.</p></div>
+      </form>`;
+    const local = !AI.webgpu ? `<p class="note">${AI_ERR.webgpu}</p>`
+      : `<div class="ai-block"><p>Modèle open source Qwen 2.5 (1,5 milliard de paramètres) qui tourne dans ton navigateur. Il répond aux questions du coach ; programmes et repas restent ceux de l’app.</p>
+        ${c.local ? `<p class="hint ai-status">${cur0 === 'local' ? 'Le modèle est téléchargé et actif sur cet appareil.' : 'Le modèle est déjà téléchargé.'}</p>${cur0 === 'local' ? '' : '<div class="actions"><button type="button" class="btn" data-act="local-use">Utiliser l’IA sur l’appareil</button></div>'}`
+        : `<div class="actions"><button type="button" class="btn" data-act="local-load">Télécharger le modèle (environ 1 Go)</button></div>`}
+        <div class="ai-progress" id="local-progress" hidden><progress max="1" value="0"></progress><p class="hint" id="local-status" role="status"></p></div>
+        <p class="hint">Rien ne quitte ton appareil. Wi-Fi conseillé pour le premier téléchargement, ensuite ça marche hors connexion. Les réponses sont plus simples qu’avec Gemini et peuvent être lentes sur un téléphone ancien.</p></div>`;
+    return `<article class="card ai-card"><header class="card-head"><span class="chip-ico">${icon('star')}</span><div><h2 class="h2">Coach IA</h2><p class="muted">Sur cet appareil : ${now}</p></div></header>
+      <fieldset><legend class="sr-only">Source de l’IA</legend><div class="choices choices--stack">
+        ${opt('none', 'Sans IA', 'Programmes, repas et coach d’exemple, calculés dans ton navigateur. Gratuit et hors connexion.')}
+        ${opt('gemini', 'Gemini, avec ta clé Google', minor ? 'Réservé aux 18 ans et plus par Google.' : 'Programmes, repas et coach écrits par Gemini, avec ta propre clé créée sur Google AI Studio.', minor)}
+        ${opt('local', 'IA sur ton appareil', 'Le coach répond sans rien envoyer sur Internet. Premier téléchargement d’environ 1 Go.', false)}
+        ${AI.serverReady ? opt('server', 'Serveur Kin Fit', 'L’IA du site Kin Fit, si elle est activée.', false) : ''}
+      </div></fieldset>
+      ${pick === 'gemini' && !minor ? gemini : ''}${pick === 'local' ? local : ''}
+    </article>`;
+  }
+
   function viewProfil(sess) {
     const p = sess.profile;
     return `<header class="hello"><div><h1 class="h1">${esc(p.prenom)}</h1><p class="lede">Ta session est enregistrée dans ce navigateur. Chaque personne a la sienne, et vous pouvez vous lancer des défis.</p></div>${scorebar(sess)}</header>
@@ -952,6 +1000,7 @@
         <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Mon profil</h2></div></header>${profileFacts(p, false)}
           <p><b>Petit-déjeuner :</b> ${PDJ[p.petitdej]}. <b>Alimentation :</b> ${esc(M.summary(p))}. <b>À éviter :</b> ${p.eviter.length ? esc(p.eviter.map((a) => ALLERG[a]).join(', ')) : 'rien de signalé'}. <b>Restrictions :</b> ${p.restrictions.trim() ? esc(p.restrictions) : 'aucune'}.</p>
           <div class="actions"><button type="button" class="btn" data-act="edit">Modifier mon profil</button><button type="button" class="btn btn--ghost" data-act="new">Nouvelle session</button></div></article>
+        ${aiSettingsCard(sess)}
         ${installCard()}
         <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Langue et pays</h2></div></header>
           <form id="prefs-form" class="stack" novalidate>${langCountryFields(window.NA_I18N)}<div class="actions"><button type="submit" class="btn btn--ghost">Enregistrer</button></div></form></article>
@@ -1292,6 +1341,17 @@
       state.pendingShare = null; save(); ui.defisTab = 'amis'; go('defis'); toast('Défi relevé. À toi de jouer !'); return;
     }
     if (a === 'share-later') { state.pendingShare = null; save(); render(); return; }
+    if (a === 'gemini-forget') { AI.setConfig({ provider: 'none', key: '' }); ui.aiPick = 'none'; render(); toast('Clé Gemini retirée de cet appareil.'); return refocus('input[name="aiprov"][value="none"]'); }
+    if (a === 'local-use') { AI.setConfig({ provider: 'local' }); render(); toast('IA sur l’appareil activée pour le coach.'); return; }
+    if (a === 'local-load') {
+      const box = $('#local-progress'); const bar = box && box.querySelector('progress'); const st = $('#local-status');
+      if (box) box.hidden = false; t.disabled = true;
+      try {
+        await AI.loadLocal((r) => { if (bar) bar.value = r.progress || 0; if (st) st.textContent = localProgress(r); });
+        AI.setConfig({ provider: 'local' }); ui.aiPick = 'local'; render(); toast('IA sur l’appareil prête pour le coach.');
+      } catch (err) { t.disabled = false; if (st) st.textContent = aiErr(err); }
+      return;
+    }
     if (a === 'parcours') { ui.planTab = 'parcours'; return go('plan'); }
     if (a === 'start') {
       const r = t.getBoundingClientRect(); sparks(r.left + r.width / 2, r.top + r.height / 2, 40, 0.5);
@@ -1343,6 +1403,12 @@
       sess.shop[weekId] = [...set]; save(); render(); refocus(`[data-shop="${CSS.escape(n)}"]`); return;
     }
     if (e.target.matches('[data-level]')) save();
+    if (e.target.name === 'aiprov') {
+      const v = e.target.value; ui.aiPick = v;
+      if (v === 'none' || v === 'server') { AI.setConfig({ provider: v }); toast(v === 'none' ? 'Coach IA désactivé : l’app utilise ses exemples.' : 'Serveur Kin Fit sélectionné.'); }
+      else if (v === 'local' && AI.config.local) AI.setConfig({ provider: 'local' });
+      render(); return refocus(`input[name="aiprov"][value="${v}"]`);
+    }
     if (e.target.name === 'lang' && e.target.closest('#welcome-form')) { window.NA_I18N.set({ lang: e.target.value }); render(); return; }
     if (e.target.id === 'session-select') { state.current = e.target.value; save(); ui.day = todayIdx; go('today'); }
   });
@@ -1354,6 +1420,15 @@
 
   document.addEventListener('submit', (e) => {
     if (e.target.id === 'launch-form' || e.target.id === 'give-form') { e.preventDefault(); return; }
+    if (e.target.id === 'gemini-form') {
+      e.preventDefault(); const key = $('#gemini-key').value.trim(); const st = $('#gemini-status'); const btn = e.target.querySelector('[type="submit"]');
+      if (!key) { st.textContent = 'Colle d’abord ta clé Gemini.'; return; }
+      st.textContent = 'Vérification de la clé auprès de Google…'; btn.disabled = true;
+      AI.testGemini(key)
+        .then(() => { AI.setConfig({ provider: 'gemini', key }); ui.aiPick = 'gemini'; render(); toast('Gemini est connecté.'); })
+        .catch((err) => { btn.disabled = false; st.textContent = aiErr(err); });
+      return;
+    }
     if (e.target.id === 'welcome-form' || e.target.id === 'prefs-form') {
       e.preventDefault(); const fd = new FormData(e.target); const country = fd.get('country');
       if (!country) { const er = $('#welcome-error'); if (er) er.textContent = 'Choisis ton pays pour continuer.'; return; }
@@ -1370,7 +1445,7 @@
       sess.chat.push({ me: true, t: text });
       if (!AI.ready) { sess.chat.push({ me: false, t: reply(text, sess) }); save(); render(); refocus('#chat-input'); return; }
       const wait = { me: false, t: '', pending: true }; sess.chat.push(wait); render(); refocus('#chat-input');
-      AI.coach(sess, coachContext(sess))
+      AI.coach(sess, coachContext(sess), (r) => { const n = $('.wait-note'); if (n) n.textContent = localProgress(r); })
         .then((t) => { wait.t = t; wait.ai = true; })
         .catch(() => { wait.t = reply(text, sess); })
         .finally(() => { delete wait.pending; save(); if (ui.view === 'coach' && cur() === sess) { render(); refocus('#chat-input'); } });

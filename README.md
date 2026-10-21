@@ -3,9 +3,12 @@
 **金 Kin Fit** — programme sportif et nutrition personnalisés, défis entre amis et médailles à gagner.
 Application web installable (PWA), en français, anglais et espagnol.
 
-> Les programmes, repas et réponses du coach peuvent être écrits par Claude (IA d'Anthropic) via une fonction Netlify.
-> Sans cette fonction (GitHub Pages, hors connexion), l'app utilise ses exemples calculés dans le navigateur.
-> Les données du profil restent sur l'appareil (localStorage) ; seules les réponses utiles sont envoyées à la fonction quand on demande une version IA.
+> Sans réglage, l'app est gratuite et hors connexion : programmes, repas, parcours et coach sont calculés dans le navigateur.
+> Chaque utilisateur peut activer un coach IA dans **Profil › Coach IA**, sans aucun coût pour l'éditeur de l'app :
+> - **Gemini avec sa propre clé Google** (créée sur Google AI Studio) : programmes, repas et coach ; l'appel part directement de son appareil vers Google ;
+> - **IA sur l'appareil** (modèle open source Qwen 2.5, environ 1 Go téléchargé une fois, WebGPU) : réponses du coach, rien ne quitte l'appareil.
+>
+> Les données du profil restent sur l'appareil (localStorage). Aucune clé n'est jamais stockée dans le code.
 
 ## Fonctionnalités
 
@@ -40,38 +43,31 @@ Puis ouvrir <http://127.0.0.1:4180/>.
 | `stickers.js` | Dessins des médailles et écussons de rang (SVG) |
 | `i18n-data.js` | Traductions anglais / espagnol des textes de l'app |
 | `i18n.js` | Langue, pays, région et traduction en direct |
-| `ai.js` | Appels à la fonction IA, avec repli sur les exemples |
+| `ai.js` | Coach IA : Gemini (clé de l'utilisateur), IA sur l'appareil (WebLLM), serveur facultatif ; repli sur les exemples |
+| `ai-core.mjs` | Prompts coach et nutrition, schémas des réponses, partagés par toutes les sources d'IA |
 | `app.js` | Interface : écrans, défis, trophées, partage, liste de courses, installation |
-| `netlify/functions/ai.mjs` | Fonction serveur `/api/ai` : prompts coach et nutrition, appel à Claude, réponses JSON |
+| `netlify/functions/ai.mjs` | Option serveur `/api/ai` (Claude), inactive sans clé |
 | `netlify.toml`, `package.json`, `scripts/build.mjs` | Déploiement Netlify (copie de l'app dans `dist/`) |
 | `manifest.webmanifest`, `sw.js`, `icons/` | Application installable et hors ligne |
 | `images/`, `scripts/silk.py` | Fond « soie d’or » de l’accueil, généré par script (aucune photo ni banque d’images) |
 | `fonts/` | Polices auto-hébergées (Manrope, Sora, Dela Gothic One — licence SIL OFL) |
 | `PRODUCT.md`, `DESIGN.md`, `.impeccable/` | Documentation produit et design |
 
-## Publier avec l'IA (Netlify)
+## Publier
 
-1. Sur <https://app.netlify.com> : **Add new site → Import an existing project → GitHub**, choisir le dépôt. Netlify lit `netlify.toml` (build `npm run build`, dossier `dist`, fonctions `netlify/functions`).
-2. Créer une clé sur <https://console.anthropic.com> (API Keys) et fixer une **limite de dépense** mensuelle (Billing → Limits).
-3. Dans Netlify : **Site configuration → Environment variables → Add a variable** : `ANTHROPIC_API_KEY` = la clé. Ne jamais la mettre dans le code ni dans Git.
-4. **Deploys → Trigger deploy**. Vérifier `https://<ton-site>.netlify.app/api/ai` : il doit afficher `{"ok":true,"ready":true}`.
+- **GitHub Pages** (gratuit) : Settings → Pages → Deploy from branch → `main` / racine. Toute l'app marche, y compris Gemini et l'IA sur l'appareil, puisque ces deux options tournent dans le navigateur de l'utilisateur.
+- **Netlify** (facultatif) : import du dépôt GitHub ; Netlify lit `netlify.toml` (build `npm run build`, dossier `dist`).
 
-Variables facultatives :
+### Coach IA : ce que l'utilisateur doit savoir (affiché dans l'app)
 
-| Variable | Défaut | Rôle |
-|---|---|---|
-| `KINFIT_MODEL_PLAN` | `claude-sonnet-5-5` | Modèle des programmes et repas |
-| `KINFIT_MODEL_CHAT` | `claude-haiku-5-5` | Modèle des réponses du coach |
-| `KINFIT_EFFORT` | `low` | Profondeur de réflexion (`low`, `medium`, `high`) : plus haut = plus lent et plus cher |
-| `KINFIT_RATE_LIMIT` | `40` | Requêtes max par adresse IP et par 10 minutes |
-| `ALLOWED_ORIGINS` | vide | Autres sites autorisés à appeler la fonction (ex. l'adresse GitHub Pages), séparés par des virgules |
+- **Gemini** : conditions de Google pour l'API gratuite. Usage réservé aux 18 ans et plus (l'option est désactivée sous 18 ans). Avec l'offre gratuite, Google peut utiliser les échanges pour améliorer ses services et les faire relire par des personnes. Dans l'Union européenne, au Royaume-Uni et en Suisse, Google demande un compte avec facturation activée pour ce type d'usage : l'éventuel coût est facturé sur le compte Google de l'utilisateur, jamais à l'éditeur. La clé est enregistrée sur l'appareil (localStorage) et envoyée seulement à Google, dans un en-tête.
+- **IA sur l'appareil** : bibliothèque WebLLM 0.2.85 chargée depuis jsDelivr, modèle `Qwen2.5-1.5B-Instruct-q4f16_1-MLC`. Navigateur compatible WebGPU nécessaire (Chrome, Edge, Safari récents). Coach seulement : un si petit modèle n'écrit pas de programmes fiables.
 
-Coût indicatif (tarifs Anthropic d'octobre 2026) : un programme complet (4 séances) coûte de l'ordre de 5 à 10 centimes, une journée de repas 1 à 2 centimes, une réponse du coach moins d'un dixième de centime. Les journaux de la fonction (Netlify → Logs → Functions) indiquent les jetons consommés à chaque appel.
+### Option serveur (Claude, payante, désactivée par défaut)
 
-## Publier sans IA
+`netlify/functions/ai.mjs` peut appeler Claude d'Anthropic avec une clé de l'éditeur. **Rien ne se passe tant que la variable `ANTHROPIC_API_KEY` n'est pas définie dans Netlify**, et aucune clé n'existe aujourd'hui. Si un jour elle est activée, l'usage est facturé au propriétaire de la clé (voir console.anthropic.com, avec une limite de dépense). Variables facultatives : `KINFIT_MODEL_PLAN`, `KINFIT_MODEL_CHAT`, `KINFIT_EFFORT`, `KINFIT_RATE_LIMIT`, `ALLOWED_ORIGINS`.
 
-- **GitHub Pages** : Settings → Pages → Deploy from branch → `main` / racine. L'app tourne avec ses exemples (pas de fonction serveur).
-- **Netlify Drop** : glisser le dossier `dist/` (après `npm run build`) sur <https://app.netlify.com/drop>.
+Les prompts coach et nutrition sont dans `ai-core.mjs`, partagés par Gemini, l'IA sur l'appareil et le serveur.
 
 ## Mettre à jour
 
