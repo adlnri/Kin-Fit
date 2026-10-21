@@ -4,7 +4,7 @@
   'use strict';
   const I = '#14110b'; const W = '#fff6e2'; const G = '#f2c14e';
   const svg = (body) => `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><g fill="none" stroke="${I}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">${body}</g></svg>`;
-  const t = (x, y, s, txt) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${s}" font-weight="800" fill="${I}" stroke="none" font-family="Sora, Manrope, system-ui, sans-serif">${txt}</text>`;
+  const t = (x, y, s, txt) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${s}" font-weight="800" fill="${I}" stroke="none" font-family="Outfit, system-ui, sans-serif">${txt}</text>`;
   const star = (cx, cy, r, fill = G) => {
     const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5; const rr = i % 2 ? r * 0.45 : r; p.push(`${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`); }
     return `<polygon points="${p.join(' ')}" fill="${fill}"/>`;

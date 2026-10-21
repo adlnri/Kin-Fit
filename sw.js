@@ -1,11 +1,11 @@
 /* Kin Fit service worker: offline app shell.
    Bump CACHE whenever the ?v= numbers in index.html change, so users get the new files. */
-const CACHE = 'kinfit-v28';
-const V = '?v=28';
+const CACHE = 'kinfit-v31';
+const V = '?v=31';
 const SHELL = [
   './', './index.html', './manifest.webmanifest',
-  `./styles.css${V}`, './fonts/fonts.css',
-  './fonts/manrope-latin.woff2', './fonts/manrope-latin-ext.woff2', './fonts/sora-latin.woff2', './fonts/sora-latin-ext.woff2',
+  `./styles.css${V}`, `./fonts/fonts.css${V}`,
+  './fonts/outfit-latin.woff2', './fonts/outfit-latin-ext.woff2',
   './fonts/dela-gothic-one-latin.woff2', './fonts/dela-gothic-one-kin.woff2',
   `./engine.js${V}`, `./circuits.js${V}`, `./i18n-data.js${V}`, `./i18n.js${V}`, `./meals.js${V}`, `./ai.js${V}`, `./ai-core.mjs${V}`, `./stickers.js${V}`, `./app.js${V}`,
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png', './images/kinfit-silk.jpg', './images/kinfit-silk-mobile.jpg',

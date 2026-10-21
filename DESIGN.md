@@ -362,3 +362,9 @@ The user asked for a home screen "plus jolie, plus glossy et lisse, c'est trop n
 - **Metallic CTA:** the gold sheen button gains an inner bevel and a highlight that slides across it three times after the view opens (none with reduced motion).
 - **Smoked glass:** on Today only, cards, challenge cards, score chips and unselected days use a translucent warm-black gradient with an 18px backdrop blur, a 10 % gold hairline and an inset top highlight; cards round to 30px.
 - **Entrance:** once per arrival on the view, the hero, chips, week, challenges and cards rise out of a 6px blur, staggered by 40ms; the ring fills from empty. Re-renders inside the view do not replay it.
+
+## Type and wordmark update (2026-10-22, user's picks)
+
+- **Text face is now Outfit** (self-hosted, SIL OFL, variable 300 to 800) for headings, body, numerals and buttons; it replaces Sora and Manrope everywhere (the `--display` and `--body` tokens, and medal text in stickers.js). Dela Gothic One stays the title face.
+- **Wordmark "golden light"**: "Kin Fit" in cream-white (#fff8e6) with a layered gold glow (8px, 22px and 44px halos), the 金 seal as a black tile with a glowing Gold Highlight border, and on the large welcome and onboarding wordmark a small twinkling four-point spark (none with reduced motion). This is a deliberate exception to the Only-Gold-Glows rule's restraint: the glow is gold, and it is reserved for the wordmark.
+- **Welcome and onboarding** now share the Today world: the silk backdrop, a lacquered side panel (top panel on mobile) and the form as a smoked-glass case, with the sheen button.

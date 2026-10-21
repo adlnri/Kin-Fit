@@ -672,7 +672,7 @@
     let name; let meta; let ico;
     if (!item) { name = 'Repos et récupération'; meta = '10 minutes de mobilité'; ico = 'stretch'; }
     else if (item.kind === 'muscu') { const m = sessionMeta(item, p, sess.seed); name = item.title; meta = `${m.duree} min · ${item.ex.length} exercices · intensité ${m.rpe}/10`; ico = 'dumbbell'; }
-    else { name = item.type; meta = `${item.duree} min · ${item.format}`; ico = 'heart'; }
+    else { name = item.type; meta = `${item.duree} min de cardio`; ico = 'heart'; }
     const done = daily[0].progress >= daily[0].target;
     const n = daily.filter((c) => c.progress >= c.target).length; const C = 2 * Math.PI * 52;
     const cta = future ? 'Voir la séance' : done ? 'Voir ma séance' : 'Commencer';
@@ -1110,7 +1110,7 @@
         <p class="lede">Choisis ta langue et ton pays : on adapte la langue, les plats et les alternatives à ta région.</p>
         ${langCountryFields(I)}
         <p class="error" id="welcome-error" role="alert"></p>
-        <div class="ob-actions"><span></span><button type="submit" class="btn btn--big">Commencer</button></div>
+        <div class="ob-actions"><span></span><button type="submit" class="btn btn--big btn--sheen">Commencer</button></div>
       </form></div>`;
   }
 
@@ -1130,7 +1130,7 @@
         <p class="error" id="ob-error" role="alert"></p>
         <div class="ob-actions">
           ${o.step > 0 ? '<button type="button" class="btn btn--ghost" data-act="ob-back">Retour</button>' : (state.sessions.length ? '<button type="button" class="btn btn--ghost" data-act="ob-cancel">Annuler</button>' : '<span></span>')}
-          <button type="submit" class="btn btn--big">${o.step === STEPS.length - 1 ? 'Créer mon profil' : 'Continuer'}</button>
+          <button type="submit" class="btn btn--big btn--sheen">${o.step === STEPS.length - 1 ? 'Créer mon profil' : 'Continuer'}</button>
         </div>
       </form></div>`;
   }
@@ -1186,18 +1186,21 @@
 
   function render() {
     const app = $('#app'); const main = $('#main'); const sess = cur();
-    document.body.dataset.view = '';
-    if (!window.NA_I18N.prefs.country) { app.classList.add('is-onboarding'); main.innerHTML = viewWelcome(); return; }
+    // Scoped styling per screen, and the entrance only when the screen changes (not on every re-render).
+    const mark = (key) => {
+      document.body.dataset.view = key;
+      const entering = ui.lastView !== key; ui.lastView = key;
+      main.classList.remove('is-entering');
+      if (entering) { void main.offsetWidth; main.classList.add('is-entering'); }
+    };
+    if (!window.NA_I18N.prefs.country) { app.classList.add('is-onboarding'); main.innerHTML = viewWelcome(); mark('welcome'); return; }
     if (!sess && !ui.ob) ui.ob = { step: 0, p: blank(), editId: null };
-    if (ui.ob) { app.classList.add('is-onboarding'); main.innerHTML = viewOnboarding(); return; }
+    if (ui.ob) { app.classList.add('is-onboarding'); main.innerHTML = viewOnboarding(); mark('onboarding'); return; }
     app.classList.remove('is-onboarding');
     const views = { today: viewToday, defis: viewDefis, album: viewAlbum, plan: viewPlan, coach: viewCoach, profil: viewProfil };
     main.classList.toggle('printing', ui.printing);
     main.innerHTML = (views[ui.view] || viewToday)(sess);
-    document.body.dataset.view = ui.view;
-    const entering = ui.lastView !== ui.view; ui.lastView = ui.view;
-    main.classList.remove('is-entering');
-    if (entering) { void main.offsetWidth; main.classList.add('is-entering'); }
+    mark(ui.view);
     renderRail(sess);
     const chat = $('#chat'); if (chat) chat.scrollTop = chat.scrollHeight;
   }

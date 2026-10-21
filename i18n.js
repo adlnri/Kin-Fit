@@ -301,6 +301,7 @@
     [/^Retour au calme · (\d+) min$/, (m) => pick(`Cool-down · ${m[1]} min`, `Vuelta a la calma · ${m[1]} min`)],
     [/^Échauffement 10 min, puis (\d+) min d’endurance facile pour finir$/, (m) => pick(`10 min warm-up, then ${m[1]} min of easy endurance to finish`, `10 min de calentamiento y luego ${m[1]} min de resistencia suave para terminar`)],
     [/^Chargement du modèle sur ton appareil : (\d+) %$/, (m) => pick(`Loading the model on your device: ${m[1]}%`, `Cargando el modelo en tu dispositivo: ${m[1]} %`)],
+    [/^(\d+) min de cardio$/, (m) => pick(`${m[1]} min of cardio`, `${m[1]} min de cardio`)],
     [/^Séance (\d+)$/, (m) => pick(`Session ${m[1]}`, `Sesión ${m[1]}`)],
     [/^intensité (\d+)\/10$/, (m) => pick(`intensity ${m[1]}/10`, `intensidad ${m[1]}/10`)],
     [/^repos (\d+) s$/, (m) => pick(`rest ${m[1]} s`, `descanso ${m[1]} s`)],
