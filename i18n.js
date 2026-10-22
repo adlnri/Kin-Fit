@@ -28,6 +28,12 @@
   /* Strings added after the bulk translation (welcome, budget, regions, alternatives, patterns' words). */
   const EXTRA = {
     'Bienvenue': ['Welcome', 'Bienvenido'],
+    "enchaîne avec le B": ["go straight into B", "encadena con la B"],
+    "Finisher · 4 min": ["Finisher · 4 min", "Finisher · 4 min"],
+    "Enchaîne chaque paire d’exercices (A puis B) sans pause et ne te repose qu’après le B.": ["Do each pair of exercises (A then B) back to back and rest only after B.", "Encadena cada pareja de ejercicios (A y luego B) sin pausa y descansa solo después de la B."],
+    "Burpees, mountain climbers, squats sautés et montées de genoux, en alternance": ["Burpees, mountain climbers, jump squats and high knees, alternating", "Burpees, escaladores, sentadillas con salto y rodillas al pecho, alternando"],
+    "Mountain climbers lents, gainage dynamique et rameur ou vélo, en alternance (sans saut)": ["Slow mountain climbers, dynamic core and rower or bike, alternating (no jumps)", "Escaladores lentos, core dinámico y remo o bici, alternando (sin saltos)"],
+    "express": ["express", "exprés"],
     "Compte Kin Fit": ["Kin Fit account", "Cuenta Kin Fit"],
     "Facultatif": ["Optional", "Opcional"],
     "Connecté": ["Signed in", "Conectado"],
@@ -362,6 +368,10 @@
     [/^Compte (.+) créé\. Ta progression est sauvegardée\.$/, (m) => pick(`Account ${m[1]} created. Your progress is backed up.`, `Cuenta ${m[1]} creada. Tu progreso está guardado.`)],
     [/^Progression de (.+) récupérée\.$/, (m) => pick(`${m[1]}’s progress restored.`, `Progreso de ${m[1]} recuperado.`)],
     [/^Supprimer définitivement le compte (.+) \? Sa sauvegarde, ses amis et ses défis partagés seront effacés\. Les données de cet appareil restent\.$/, (m) => pick(`Permanently delete the account ${m[1]}? Its backup, friends and shared challenges will be erased. The data on this device stays.`, `¿Eliminar definitivamente la cuenta ${m[1]}? Se borrarán su copia, sus amigos y sus retos compartidos. Los datos de este dispositivo se quedan.`)],
+    [/^Format express (\d+) min\.$/, (m) => pick(`Express format, ${m[1]} min.`, `Formato exprés de ${m[1]} min.`)],
+    [/^Termine par le finisher : la dépense estimée atteint environ (\d+) % d’une séance classique d’une heure \((\d+) kcal\)\.$/, (m) => pick(`Finish with the finisher: estimated energy use reaches about ${m[1]}% of a classic one-hour session (${m[2]} kcal).`, `Termina con el finisher: el gasto estimado alcanza alrededor del ${m[1]} % de una sesión clásica de una hora (${m[2]} kcal).`)],
+    [/^8 rounds de 20 s à fond, 10 s de repos : (.+)\.$/, (m) => pick(`8 rounds of 20 s all-out, 10 s rest: ${tr(m[1])}.`, `8 rondas de 20 s a tope, 10 s de descanso: ${tr(m[1])}.`)],
+    [/^≈ (\d+) kcal$/, (m) => `≈ ${m[1]} kcal`],
     [/^Séance (\d+)$/, (m) => pick(`Session ${m[1]}`, `Sesión ${m[1]}`)],
     [/^intensité (\d+)\/10$/, (m) => pick(`intensity ${m[1]}/10`, `intensidad ${m[1]}/10`)],
     [/^repos (\d+) s$/, (m) => pick(`rest ${m[1]} s`, `descanso ${m[1]} s`)],

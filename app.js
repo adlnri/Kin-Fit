@@ -4,7 +4,7 @@
   const {
     $, $$, esc, SPORTS, OBJECTIFS, MATERIEL, PDJ, EVITER, DAYS, DAYS_FULL, E, FOOD, GOAL_FOOD, DRINK,
     lvLabel, lvIdx, sportName, sportData, sportList, variant, loadText, setsReps, restrictionNote,
-    buildPlan, sessionMeta, activity, dailyKcal, breakfast, DUREES, durOf,
+    buildPlan, sessionMeta, activity, dailyKcal, breakfast, DUREES, durOf, restOf, pairOf, FINISHER,
   } = window.NA;
   const M = window.NA_MEALS;
   const CLOUD = window.NA_CLOUD;
@@ -433,11 +433,13 @@
   function exRow(id, i, sess, item, opts) {
     const p = sess.profile; const ex = E[id]; const v = variant(ex, p); const sd = sportData(p);
     const checked = opts.log && opts.log.ex.includes(id);
-    return `<li class="ex${checked ? ' is-checked' : ''}">
-      ${opts.check ? `<label class="tick"><input type="checkbox" data-ex="${id}"${checked ? ' checked' : ''}${opts.readOnly ? ' disabled' : ''}><span>${icon('check')}</span><b class="sr-only">${esc(v.n)} fait</b></label>` : `<span class="ex-num">${i + 1}</span>`}
+    const pair = pairOf(i, item.ex.length, p);
+    const rest = pair && pair.first ? 'enchaîne avec le B' : `repos ${restOf(ex, p)} s`;
+    return `<li class="ex${checked ? ' is-checked' : ''}${pair ? ' ex--pair' : ''}">
+      ${opts.check ? `<label class="tick"><input type="checkbox" data-ex="${id}"${checked ? ' checked' : ''}${opts.readOnly ? ' disabled' : ''}><span>${icon('check')}</span><b class="sr-only">${esc(v.n)} fait</b></label>` : `<span class="ex-num">${pair ? pair.label : i + 1}</span>`}
       <div class="ex-main">
-        <h4>${esc(v.n)}</h4>
-        <p class="ex-meta"><span data-sr="${id}" data-i="${i}">${setsReps(ex, p, sess.seed, i).txt}</span> · repos ${ex.rest} s · <span data-w="${id}">${esc(loadText(v, p))}</span></p>
+        <h4>${pair && opts.check ? `<span class="pair-tag">${pair.label}</span> ` : ''}${esc(v.n)}</h4>
+        <p class="ex-meta"><span data-sr="${id}" data-i="${i}">${setsReps(ex, p, sess.seed, i).txt}</span> · ${rest} · <span data-w="${id}">${esc(loadText(v, p))}</span></p>
         <p class="ex-muscle">${esc(ex.m)}</p>
         ${exDetails(id, v, ex, sd, item.tpl.key)}
       </div>
@@ -450,10 +452,12 @@
     const L0 = opts.log;
     const n = L0 ? Math.min(L0.ex.length, item.ex.length) : 0;
     return `<article class="card card--sport">
-      <header class="card-head"><span class="chip-ico">${icon('dumbbell')}</span><div><h2 class="h2">${esc(item.title)}</h2><p class="muted">${esc(item.tpl.obj)} · ${meta.duree} min · intensité ${meta.rpe}/10</p></div>
+      <header class="card-head"><span class="chip-ico">${icon('dumbbell')}</span><div><h2 class="h2">${esc(item.title)}</h2><p class="muted">${esc(item.tpl.obj)} · ${meta.duree} min · intensité ${meta.rpe}/10 · ≈ ${meta.kcal} kcal</p></div>
         ${opts.check ? `<span class="count-pill">${n}/${item.ex.length}</span>` : `<span class="day-pill">${DAYS[item.day]}</span>`}</header>
       ${note ? `<p class="note">${esc(note)}</p>` : ''}
+      ${meta.express ? `<p class="note note--express"><b>Format express ${meta.duree} min.</b> Enchaîne chaque paire d’exercices (A puis B) sans pause et ne te repose qu’après le B. Termine par le finisher : la dépense estimée atteint environ ${meta.pct} % d’une séance classique d’une heure (${meta.ref} kcal).</p>` : ''}
       <ol class="exs">${item.ex.map((id, i) => exRow(id, i, sess, item, opts)).join('')}</ol>
+      ${meta.express ? `<div class="finisher"><p class="label">Finisher · 4 min</p><p>8 rounds de 20 s à fond, 10 s de repos : ${esc(/genou/i.test(p.restrictions || '') ? FINISHER.knee : FINISHER.std)}.</p></div>` : ''}
       ${opts.check && !opts.readOnly ? `<div class="card-foot"><button type="button" class="link-btn" data-tap="miss" aria-pressed="${L0.status === 'manquee'}">${L0.status === 'manquee' ? 'Séance marquée manquée, annuler' : 'J’ai manqué cette séance'}</button></div>` : ''}
     </article>`;
   }
@@ -462,7 +466,7 @@
     const note = /genou/i.test(sess.profile.restrictions || '') ? 'Genou signalé : remplace les sauts et les sprints par du vélo ou du rameur, même durée.' : '';
     const L0 = opts.log; const done = L0 && L0.status === 'faite';
     return `<article class="card card--cardio">
-      <header class="card-head"><span class="chip-ico">${icon('heart')}</span><div><h2 class="h2">${esc(item.type)}</h2><p class="muted">Cardio · ${item.duree} min</p></div>${opts.check ? '' : `<span class="day-pill">${DAYS[item.day]}</span>`}</header>
+      <header class="card-head"><span class="chip-ico">${icon('heart')}</span><div><h2 class="h2">${esc(item.type)}</h2><p class="muted">Cardio · ${item.duree} min · ≈ ${item.kcal} kcal</p></div>${opts.check ? '' : `<span class="day-pill">${DAYS[item.day]}</span>`}</header>
       ${note ? `<p class="note">${esc(note)}</p>` : ''}
       <dl class="facts"><div><dt>Format</dt><dd>${esc(item.format)}</dd></div><div><dt>Objectif</dt><dd>${esc(item.obj)}</dd></div></dl>
       <p><b>Conseils techniques :</b> ${esc(item.conseils)}</p>
@@ -672,8 +676,8 @@
     const title = ui.day === todayIdx ? `${new Date().getHours() < 18 ? 'Bonjour' : 'Bonsoir'}, ${esc(p.prenom)}` : esc(day);
     let name; let meta; let ico;
     if (!item) { name = 'Repos et récupération'; meta = '10 minutes de mobilité'; ico = 'stretch'; }
-    else if (item.kind === 'muscu') { const m = sessionMeta(item, p, sess.seed); name = item.title; meta = `${m.duree} min · ${item.ex.length} exercices · intensité ${m.rpe}/10`; ico = 'dumbbell'; }
-    else { name = item.type; meta = `${item.duree} min de cardio`; ico = 'heart'; }
+    else if (item.kind === 'muscu') { const m = sessionMeta(item, p, sess.seed); name = item.title; meta = `${m.duree} min · ${item.ex.length} exercices · ≈ ${m.kcal} kcal${m.express ? ' · express' : ''}`; ico = 'dumbbell'; }
+    else { name = item.type; meta = `${item.duree} min de cardio · ≈ ${item.kcal} kcal`; ico = 'heart'; }
     const done = daily[0].progress >= daily[0].target;
     const n = daily.filter((c) => c.progress >= c.target).length; const C = 2 * Math.PI * 52;
     const cta = future ? 'Voir la séance' : done ? 'Voir ma séance' : 'Commencer';
@@ -865,7 +869,7 @@
         <div class="seg" role="group" aria-label="Durée du parcours">${DUREES.map((n) => `<button type="button" data-cdur="${n}" aria-pressed="${n === c.duree}">${n} min</button>`).join('')}</div>
       </div>
       <article class="card card--sport parcours">
-        <header class="card-head"><span class="chip-ico">${icon(c.icon)}</span><div><h2 class="h2">Parcours ${c.name.toLowerCase()}</h2><p class="muted">${c.duree} min · ${c.rounds} tours · ${c.stations.length} exercices</p></div></header>
+        <header class="card-head"><span class="chip-ico">${icon(c.icon)}</span><div><h2 class="h2">Parcours ${c.name.toLowerCase()}</h2><p class="muted">${c.duree} min · ${c.rounds} tours · ${c.stations.length} exercices · ≈ ${c.kcal} kcal</p></div></header>
         ${c.missing ? '<p class="note">Il te faut une paire d’haltères. Pour débuter, des bouteilles d’eau ou un sac chargé font l’affaire.</p>' : ''}
         ${c.knee ? '<p class="note">Genou signalé : les sauts sont remplacés par des versions sans impact.</p>' : ''}
         <dl class="facts"><div><dt>Effort</dt><dd>${c.pace.on} s</dd></div><div><dt>Repos entre exercices</dt><dd>${c.pace.off} s</dd></div><div><dt>Repos entre les tours</dt><dd>${c.pace.rest} s</dd></div><div><dt>Tours</dt><dd>${c.rounds}</dd></div></dl>

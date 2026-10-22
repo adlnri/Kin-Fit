@@ -150,10 +150,31 @@
     B: { zone: 'Haut du corps, poussée et tirage', key: 'haut', obj: 'Équilibrer poussée et tirage, protéger les épaules', ex: ['bench', 'row', 'ohp', 'pull', 'face', 'pallof'] },
     C: { zone: 'Corps entier et gainage', key: 'tronc', obj: 'Relier le bas et le haut du corps par un tronc solide', ex: ['deadlift', 'thruster', 'traction', 'farmer', 'chop', 'deadbug'] },
   };
-  // Session length chosen in onboarding: how many exercises and how many extra sets fit in it.
+  // Session length chosen in onboarding. Short sessions switch to an express format (supersets, shorter rests,
+  // a 4-minute finisher) so the energy spent stays close to a classic hour. MET values follow the
+  // Compendium of Physical Activities: strength training 5, faster supersets 6.5, vigorous circuit 8.
   const DUREES = [30, 45, 60, 75, 90];
-  const DUR = { 30: { n: 5, ds: -1 }, 45: { n: 5, ds: 0 }, 60: { n: 6, ds: 0 }, 75: { n: 7, ds: 0 }, 90: { n: 7, ds: 1 } };
+  const DUR = {
+    30: { n: 5, ds: -1, rest: 0.5, ss: true, met: 8 },
+    45: { n: 5, ds: 0, rest: 0.7, ss: true, met: 6.5 },
+    60: { n: 6, ds: 0, rest: 1, met: 5 },
+    75: { n: 7, ds: 0, rest: 1, met: 5 },
+    90: { n: 7, ds: 1, rest: 1, met: 5 },
+  };
   const durOf = (p) => (DUR[p.duree] ? +p.duree : 60);
+  // Estimated energy burned: MET × weight (kg) × hours, rounded to 5 kcal.
+  const burnOf = (met, p, min) => Math.round((met * (+p.poids || 70) * min) / 60 / 5) * 5;
+  const restOf = (ex, p) => Math.max(20, Math.round((ex.rest * DUR[durOf(p)].rest) / 5) * 5);
+  // Superset labels in express sessions: 1A, 1B, 2A, 2B, then a single last exercise.
+  function pairOf(i, n, p) {
+    if (!DUR[durOf(p)].ss) return null;
+    const paired = i < n - (n % 2);
+    return { label: paired ? `${(i >> 1) + 1}${i % 2 ? 'B' : 'A'}` : `${(i >> 1) + 1}`, first: paired && i % 2 === 0 };
+  }
+  const FINISHER = {
+    std: 'Burpees, mountain climbers, squats sautés et montées de genoux, en alternance',
+    knee: 'Mountain climbers lents, gainage dynamique et rameur ou vélo, en alternance (sans saut)',
+  };
   const EXTRA_EX = ['deadbug', 'pallof', 'chop', 'farmer', 'planche', 'face', 'mollet'];
   const ORDER = { 2: ['C', 'K'], 3: ['A', 'K', 'B'], 4: ['A', 'B', 'K', 'C'], 5: ['A', 'K', 'B', 'C', 'K'], 6: ['A', 'K', 'B', 'K', 'C', 'K'] };
   const DAYMAP = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 5], 5: [0, 1, 3, 4, 5], 6: [0, 1, 2, 3, 4, 5] };
@@ -270,6 +291,8 @@
         const D = durOf(p); const extra = D - 10 - k.duree;
         const c = { ...k, kind: 'cardio', day, title: k.type };
         if (extra >= 5) { c.duree = D; c.format = `${k.format}. Échauffement 10 min, puis ${extra} min d’endurance facile pour finir`; }
+        // The base format at its own intensity; any added warm-up and easy endurance at MET 5.
+        c.kcal = burnOf(k === ZONE2 ? 6 : 8, p, k.duree) + burnOf(5, p, c.duree - k.duree);
         return c;
       }
       const t = TPL[c];
@@ -284,7 +307,8 @@
   }
 
   function sessionMeta(item, p, seed) {
-    return { duree: durOf(p), rpe: [6, 7, 8][lvIdx(p.niveau)] };
+    const d = DUR[durOf(p)]; const kcal = burnOf(d.met, p, durOf(p)); const ref = burnOf(5, p, 60);
+    return { duree: durOf(p), rpe: Math.min(9, [6, 7, 8][lvIdx(p.niveau)] + (d.ss ? 1 : 0)), kcal, ref, pct: Math.round((kcal / ref) * 100), express: !!d.ss };
   }
 
   function activity(p) {
@@ -324,6 +348,6 @@
   }
 
 
-  window.NA = { $, $$, esc, round, DUREES, durOf, SPORTS, OBJECTIFS, MATERIEL, PDJ, EVITER, DAYS, DAYS_FULL, SPORT, ZONE2, E, TPL, FOOD, BF, GOAL_FOOD, DRINK,
+  window.NA = { $, $$, esc, round, DUREES, durOf, burnOf, restOf, pairOf, FINISHER, SPORTS, OBJECTIFS, MATERIEL, PDJ, EVITER, DAYS, DAYS_FULL, SPORT, ZONE2, E, TPL, FOOD, BF, GOAL_FOOD, DRINK,
     lvLabel, lvIdx, sportName, sportData, sportList, variant, loadText, setsReps, restrictionNote, buildPlan, sessionMeta, activity, dailyKcal, breakfast };
 })();

@@ -89,7 +89,7 @@ export function build(task, body) {
   if (task === 'seance') {
     const s = body.seance || {};
     return { kind: 'plan', system: COACH, schema: SEANCE, max: 6000,
-      text: `${head}\n\nGénère la séance de musculation ${clip(s.num, 3)} sur ${clip(s.total, 3)} de la semaine. Zone ciblée : ${clip(s.zone, 80)}. Autres séances de la semaine : ${clip(s.autres, 300)}. Durée visée : ${clip(s.duree, 3) || 60} minutes échauffement compris ; adapte le nombre d'exercices (au moins 5) et de séries à cette durée. Ne répète pas les exercices des autres zones.` };
+      text: `${head}\n\nGénère la séance de musculation ${clip(s.num, 3)} sur ${clip(s.total, 3)} de la semaine. Zone ciblée : ${clip(s.zone, 80)}. Autres séances de la semaine : ${clip(s.autres, 300)}. Durée visée : ${clip(s.duree, 3) || 60} minutes échauffement compris ; adapte le nombre d'exercices (au moins 5) et de séries à cette durée.${Number(s.duree) && Number(s.duree) <= 45 ? ' Séance courte : organise les exercices en supersets (paires A/B enchaînées sans pause), raccourcis les repos et termine par un finisher de 4 minutes (20 s d’effort, 10 s de repos), pour une dépense énergétique proche d’une séance classique d’une heure ; dis-le dans le pourquoi.' : ''} Ne répète pas les exercices des autres zones.` };
   }
   if (task === 'complements') {
     return { kind: 'plan', system: COACH, schema: COMPLEMENTS, max: 4000,

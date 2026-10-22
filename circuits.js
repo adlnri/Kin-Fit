@@ -19,11 +19,11 @@
 
   // Stations per circuit: engine exercises (id) or cardio moves (move).
   const TYPES = {
-    corps: { name: 'Poids du corps', icon: 'stretch', kit: 'corps', stations: [{ id: 'squat' }, { id: 'bench' }, { id: 'fente' }, { id: 'row' }, { id: 'hip' }, { id: 'ohp' }, { id: 'planche' }, { id: 'deadbug' }],
+    corps: { name: 'Poids du corps', icon: 'stretch', kit: 'corps', met: 7, stations: [{ id: 'squat' }, { id: 'bench' }, { id: 'fente' }, { id: 'row' }, { id: 'hip' }, { id: 'ohp' }, { id: 'planche' }, { id: 'deadbug' }],
       why: 'Un parcours sans matériel qui alterne jambes, poussée, tirage et gainage : chaque groupe récupère pendant que le suivant travaille.' },
-    cardio: { name: 'Cardio', icon: 'heart', kit: 'corps', stations: [{ move: 'jacks' }, { move: 'genoux' }, { move: 'burpee' }, { move: 'climber' }, { move: 'patineur' }, { move: 'corde' }, { move: 'shadow' }, { move: 'sprint' }],
+    cardio: { name: 'Cardio', icon: 'heart', kit: 'corps', met: 8, stations: [{ move: 'jacks' }, { move: 'genoux' }, { move: 'burpee' }, { move: 'climber' }, { move: 'patineur' }, { move: 'corde' }, { move: 'shadow' }, { move: 'sprint' }],
       why: 'Des efforts courts et intenses qui font monter le cœur, puis une récupération incomplète : idéal pour l’endurance et la dépense calorique.' },
-    halteres: { name: 'Haltères', icon: 'dumbbell', kit: 'halteres', stations: [{ id: 'squat' }, { id: 'bench' }, { id: 'row' }, { id: 'fente' }, { id: 'ohp' }, { id: 'rdl' }, { id: 'thruster' }, { id: 'farmer' }],
+    halteres: { name: 'Haltères', icon: 'dumbbell', kit: 'halteres', met: 7.5, stations: [{ id: 'squat' }, { id: 'bench' }, { id: 'row' }, { id: 'fente' }, { id: 'ohp' }, { id: 'rdl' }, { id: 'thruster' }, { id: 'farmer' }],
       why: 'Une paire d’haltères suffit : mouvements polyarticulaires enchaînés pour la force et le cardio en même temps.' },
   };
 
@@ -51,7 +51,7 @@
     const rounds = Math.max(2, Math.round(((D - warm - cool) * 60 + pace.rest) / (lap + pace.rest)));
     const stations = T.stations.slice(0, n).map((st) => station(st, T.kit, p));
     const missing = T.kit === 'halteres' && !p.materiel.some((m) => m === 'halteres' || m === 'salle');
-    return { type, name: T.name, icon: T.icon, why: T.why, duree: D, rounds, pace, stations, warm, cool,
+    return { type, name: T.name, icon: T.icon, why: T.why, duree: D, rounds, pace, stations, warm, cool, kcal: NA.burnOf(T.met, p, D),
       warmList: WARM, coolList: COOL, missing, knee: /genou/i.test(p.restrictions || '') };
   }
 
