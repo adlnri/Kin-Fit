@@ -917,7 +917,7 @@
       ? [...prog.seances.map((x) => ({ day: x.day, html: aiSessionCard(x) })), ...prog.cardio.map((x) => ({ day: x.day ?? 9, html: aiCardioCard(x) }))].sort((a, b) => a.day - b.day).map((x) => x.html).join('') + aiRecoCard(prog.recuperation)
       : plan.items.map((it) => (it.kind === 'muscu' ? sessionCard(it, sess) : cardioCard(it, sess))).join('') + recoCard(sess, 'Récupération et conseils');
     return `<header class="hello"><div><h1 class="h1">Programme sportif</h1><p class="lede">${OBJECTIFS[p.objectif]} · ${esc(sportList(p))} · ${prog ? 'coach IA' : `version ${sess.seed + 1}`}</p></div>
-      <div class="actions">${aiBtns}${prog ? '' : `<button type="button" class="btn${AI.can('programme') ? ' btn--ghost' : ''}" data-act="regen">Régénérer</button>`}<button type="button" class="btn btn--ghost" data-act="print">Imprimer</button></div></header>${tabs}
+      <div class="actions">${aiBtns || `<button type="button" class="btn btn--glass" data-act="ai-setup">${icon('star')}Activer le coach IA</button>`}${prog ? '' : `<button type="button" class="btn${AI.can('programme') ? ' btn--ghost' : ''}" data-act="regen">Régénérer</button>`}<button type="button" class="btn btn--ghost" data-act="print">Imprimer</button></div></header>${tabs}
       <div class="stack">
         <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Profil résumé</h2></div></header>${profileFacts(p, false)}${prog ? '' : `${levelControl(p)}${durControl(p)}<p class="hint">Niveau et durée recalculent les charges, les séries et le nombre d’exercices de toutes les séances.</p>`}</article>
         ${ui.aiBusy === 'prog' ? aiBusyCard('Le coach IA écrit tes séances, une par une. Compte environ 30 secondes.') : ''}
@@ -932,7 +932,7 @@
         ? '<div class="msg msg--wait" aria-busy="true"><b>Coach</b><span class="ai-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">Le coach écrit</span><small class="wait-note" aria-live="polite"></small></div>'
         : `<div class="msg${m.me ? ' msg--me' : ''}"><b>${m.me ? 'Toi' : 'Coach'}</b>${m.ai ? ai(m.t) : esc(m.t)}</div>`)).join('')
       : '<p class="empty">Aucun message pour l’instant. Essaie : « Par quoi remplacer le squat ? », « J’ai faim le soir », « Je suis fatigué aujourd’hui ».</p>';
-    return `<header class="hello"><div><h1 class="h1">Ton coach</h1><p class="lede">${AI.ready ? 'Pose une question sur ta séance, ton assiette ou tes défis. Le coach IA répond à partir de ton profil.' : 'Pose une question sur ta séance, ton assiette ou tes défis. Les réponses de ce prototype sont écrites à l’avance.'}</p></div></header>
+    return `<header class="hello"><div><h1 class="h1">Ton coach</h1><p class="lede">${AI.ready ? 'Pose une question sur ta séance, ton assiette ou tes défis. Le coach IA répond à partir de ton profil.' : 'Pose une question sur ta séance, ton assiette ou tes défis. Les réponses de ce prototype sont écrites à l’avance.'}</p></div>${AI.ready ? '' : `<div class="actions"><button type="button" class="btn btn--sheen" data-act="ai-setup">${icon('star')}Activer le coach IA</button></div>`}</header>
       <article class="card card--coach chat-card">
         <div class="chat" id="chat" role="log" aria-label="Conversation avec le coach">${msgs}</div>
         <form class="chat-form" id="chat-form"><input class="input" id="chat-input" type="text" aria-label="Ton message" placeholder="Écris ta question" autocomplete="off" required><button class="btn" type="submit">${icon('send')}Envoyer</button></form>
@@ -1521,6 +1521,7 @@
       } catch (err) { t.disabled = false; if (st) st.textContent = aiErr(err); }
       return;
     }
+    if (a === 'ai-setup') { go('profil'); const c = $$('.ai-card').find((x) => x.querySelector('input[name="aiprov"]')); if (c) c.scrollIntoView({ block: 'start' }); return; }
     if (a === 'parcours') { ui.planTab = 'parcours'; return go('plan'); }
     if (a === 'start') {
       const r = t.getBoundingClientRect(); sparks(r.left + r.width / 2, r.top + r.height / 2, 40, 0.5);

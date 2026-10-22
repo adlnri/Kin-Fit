@@ -28,6 +28,7 @@
   /* Strings added after the bulk translation (welcome, budget, regions, alternatives, patterns' words). */
   const EXTRA = {
     'Bienvenue': ['Welcome', 'Bienvenido'],
+    "Activer le coach IA": ["Turn on the AI coach", "Activar el coach IA"],
     "enchaîne avec le B": ["go straight into B", "encadena con la B"],
     "Finisher · 4 min": ["Finisher · 4 min", "Finisher · 4 min"],
     "Enchaîne chaque paire d’exercices (A puis B) sans pause et ne te repose qu’après le B.": ["Do each pair of exercises (A then B) back to back and rest only after B.", "Encadena cada pareja de ejercicios (A y luego B) sin pausa y descansa solo después de la B."],

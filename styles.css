@@ -814,3 +814,5 @@ body:is([data-view="welcome"], [data-view="onboarding"]) .ob-login { grid-column
 .finisher { display: grid; gap: 4px; padding: 12px 14px; border-radius: var(--r); border: 1px dashed var(--line-2); background: rgba(255, 138, 61, .08); }
 .finisher .label { color: var(--sport); }
 .pair-tag { display: inline-grid; place-items: center; min-width: 2.1em; padding: 0 6px; height: 1.5em; border-radius: 999px; background: var(--surface-3); color: var(--gold-hi); font-size: .8em; font-weight: 800; vertical-align: 1px; }
+
+.ai-card { scroll-margin-top: 84px; }
