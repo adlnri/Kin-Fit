@@ -7,6 +7,7 @@
     buildPlan, sessionMeta, activity, dailyKcal, breakfast, DUREES, durOf,
   } = window.NA;
   const M = window.NA_MEALS;
+  const CLOUD = window.NA_CLOUD;
   const ALLERG = M.ALLERGENES;
 
   /* ---------- Icons: one 24px grid, 2px round stroke ---------- */
@@ -138,7 +139,7 @@
     return s;
   };
   state.sessions.forEach(migrate);
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* in-memory only */ } };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* in-memory only */ } cloudPush(); };
   const cur = () => state.sessions.find((s) => s.id === state.current) || null;
   const lg = (sess, d) => { sess.log[d] = sess.log[d] || { ex: [], pdj: false, eau: 0, mob: false, status: '' }; return sess.log[d]; };
 
@@ -741,6 +742,10 @@
   }
 
   function participants(item) {
+    if (item.cloud) {
+      const m = (item.members || []).filter((x) => x.status !== 'declined').map((x) => ({ n: x.pseudo, v: Math.min(x.me ? item.progress || 0 : x.progress || 0, item.target), me: x.me, wait: x.status === 'invited' }));
+      return m.length > 1 ? `<ul class="duel" aria-label="Qui participe">${m.sort((a, b) => b.v - a.v).map((o) => `<li${o.me ? ' class="is-me"' : ''}><span>${esc(o.n)}${o.me ? ' (toi)' : o.wait ? ' (invité)' : ''}</span><i style="--v:${Math.round((o.v / item.target) * 100)}%"></i><b>${o.v}</b></li>`).join('')}</ul>` : '';
+    }
     const out = [];
     state.sessions.forEach((s) => { const x = s.inbox.find((y) => y.id === item.id && y.status === 'accepted'); if (x) out.push({ n: s.profile.prenom, v: Math.min(x.progress || 0, x.target), me: s.id === state.current }); });
     return out.length > 1 ? `<ul class="duel" aria-label="Qui participe">${out.sort((a, b) => b.v - a.v).map((o) => `<li${o.me ? ' class="is-me"' : ''}><span>${esc(o.n)}${o.me ? ' (toi)' : ''}</span><i style="--v:${Math.round((o.v / item.target) * 100)}%"></i><b>${o.v}</b></li>`).join('')}</ul>` : '';
@@ -749,14 +754,14 @@
   function viewAmis(sess) {
     const fresh = sess.inbox.filter((x) => x.status === 'new');
     const active = sess.inbox.filter((x) => x.status === 'accepted');
-    return `<div class="amis-head"><p>Lance un défi à quelqu’un sur cet appareil ou partage-le par lien. Chacun suit sa progression, et le premier arrivé gagne la médaille.</p>
+    return `${friendsBlock()}<div class="amis-head"><p>Lance un défi à quelqu’un sur cet appareil ou partage-le par lien. Chacun suit sa progression, et le premier arrivé gagne la médaille.</p>
         <button type="button" class="btn btn--amis" data-act="launch">${icon('send')}Lancer un défi</button></div>
       ${fresh.length ? `<h2 class="h3">Défis reçus</h2><div class="defis">${fresh.map((x) => `<article class="defi defi--${x.cat} is-invite">
         <div class="defi-badge">${icon(x.icon)}</div><div class="defi-body"><div class="defi-top"><h3>${esc(x.title)}</h3><span class="pts">+50 pts</span></div>
         <p class="defi-desc">De la part de ${esc(x.from)}</p>${x.msg ? `<p class="defi-msg">« ${esc(x.msg)} »</p>` : ''}
         <div class="actions"><button type="button" class="btn btn--cat" data-accept="${x.id}">Relever le défi</button><button type="button" class="btn btn--ghost" data-decline="${x.id}">Refuser</button></div></div></article>`).join('')}</div>` : ''}
       <h2 class="h3">En cours</h2>
-      ${active.length ? `<div class="defis">${active.map((x) => defiCard(socialCard(x), sess, { extra: participants(x) + `<button type="button" class="link-btn" data-copy="${x.id}">${icon('link')}Copier le lien du défi</button>` })).join('')}</div>` : `<p class="empty">Aucun défi entre amis pour l’instant. Lance le premier !</p>`}
+      ${active.length ? `<div class="defis">${active.map((x) => defiCard(socialCard(x), sess, { extra: participants(x) + (x.cloud ? '' : `<button type="button" class="link-btn" data-copy="${x.id}">${icon('link')}Copier le lien du défi</button>`) })).join('')}</div>` : `<p class="empty">Aucun défi entre amis pour l’instant. Lance le premier !</p>`}
       ${sess.sent.length ? `<h2 class="h3">Envoyés</h2><ul class="sent">${sess.sent.slice(0, 8).map((x) => `<li>${icon('send')}<span><b>${esc(x.title)}</b> à ${esc(x.to)}</span></li>`).join('')}</ul>` : ''}`;
   }
 
@@ -945,6 +950,125 @@
     return `<article class="card"><header class="card-head"><span class="chip-ico">${icon('home')}</span><div><h2 class="h2">Installer l’app</h2></div></header>${body}</article>`;
   }
 
+  /* ---------- Account (Supabase, see cloud.js) ---------- */
+
+  const CLOUD_ERR = {
+    pseudo_taken: 'Ce pseudo est déjà pris. Essaie une variante.',
+    pseudo_invalid: 'Pseudo de 3 à 20 caractères : lettres, chiffres, point, tiret ou tiret bas.',
+    not_found: 'Aucun compte avec ce pseudo. Vérifie l’orthographe.',
+    network: 'Pas de connexion. Réessaie quand tu as du réseau.',
+    offline: 'Le service de comptes ne répond pas. Réessaie plus tard.',
+  };
+  const cloudErr = (e) => CLOUD_ERR[e && e.code] || 'Ça n’a pas marché. Réessaie dans un moment.';
+
+  // What the account keeps: the whole session, minus device-only bits; shared challenges live on the server.
+  function cloudState(sess) {
+    const s = JSON.parse(JSON.stringify(sess)); delete s.id; delete s.uid; delete s.cloudAt;
+    s.inbox = (s.inbox || []).filter((x) => !x.cloud);
+    s.prefs = { lang: window.NA_I18N.lang, country: window.NA_I18N.prefs.country || '' };
+    return s;
+  }
+
+  let pushTimer = null;
+  function cloudPush(now) {
+    const sess = cur();
+    if (!CLOUD.linked || !sess || sess.uid !== CLOUD.user.id) return Promise.resolve();
+    clearTimeout(pushTimer);
+    const run = () => CLOUD.push(cloudState(sess)).then((at) => {
+      if (!at) return; sess.cloudAt = at; ui.syncAt = new Date(at).toLocaleTimeString(window.NA_I18N.locale, { hour: '2-digit', minute: '2-digit' });
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* in-memory only */ }
+    }).catch(() => { /* offline: the next save retries */ });
+    if (now) return run();
+    pushTimer = setTimeout(run, 2500); return Promise.resolve();
+  }
+
+  function adopt(sess, remote, at) {
+    const keep = { id: sess.id, uid: sess.uid, inbox: (sess.inbox || []).filter((x) => x.cloud) };
+    Object.keys(sess).forEach((k) => { delete sess[k]; });
+    Object.assign(sess, JSON.parse(JSON.stringify(remote)), keep, { cloudAt: at });
+    migrate(sess); delete sess.prefs;
+    if (remote.prefs && remote.prefs.country && !window.NA_I18N.prefs.country) window.NA_I18N.set(remote.prefs);
+  }
+
+  // Ties the signed-in account to a session on this device; the newest copy wins.
+  async function linkAccount() {
+    const u = CLOUD.user; const pr = CLOUD.profile;
+    if (!u || !pr) { if (ui.view === 'profil' || ui.ob) render(); return; }
+    const remote = pr.state && pr.state.profile ? pr.state : null;
+    let sess = state.sessions.find((x) => x.uid === u.id);
+    if (!sess) {
+      const c = cur();
+      if (!remote) { if (c) { c.uid = u.id; save(); await cloudPush(true); } render(); return refreshSocial(); }
+      const untouched = (x) => !x.points && !Object.keys(x.done || {}).length;
+      if (c && !c.uid && untouched(c)) sess = c;
+      else { sess = migrate({ id: `s${Date.now()}`, seed: 0, profile: remote.profile }); state.sessions.push(sess); }
+      sess.uid = u.id; adopt(sess, remote, pr.updated_at); state.current = sess.id; ui.ob = null;
+      toast(`Progression de ${pr.pseudo} récupérée.`);
+    } else if (remote && pr.updated_at > (sess.cloudAt || '')) adopt(sess, remote, pr.updated_at);
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* in-memory only */ }
+    if (!document.activeElement.matches('input, textarea, select')) render();
+    refreshSocial();
+  }
+
+  async function refreshSocial() {
+    if (!CLOUD.linked) { ui.friends = null; return; }
+    try {
+      const [fr, ch] = await Promise.all([CLOUD.friends(), CLOUD.challenges()]);
+      ui.friends = fr || [];
+      const sess = state.sessions.find((x) => x.uid === CLOUD.user.id);
+      if (sess) {
+        const me = CLOUD.profile.pseudo; const prev = new Map(sess.inbox.filter((x) => x.cloud).map((x) => [x.id, x]));
+        const items = (ch || []).map((c) => {
+          const old = prev.get(c.id); const mine = Math.max(c.my_progress || 0, old ? old.progress || 0 : 0);
+          if (old && (old.progress || 0) > (c.my_progress || 0)) CLOUD.setProgress(c.id, old.progress).catch(() => {});
+          const status = old && old.status === 'accepted' ? 'accepted' : c.my_status === 'invited' ? 'new' : 'accepted';
+          return { id: c.id, cloud: true, cid: c.cid, title: c.title, unit: c.unit, target: c.target, cat: c.cat, icon: c.icon, steps: c.steps, msg: c.msg, from: c.from_pseudo, self: c.from_pseudo === me, status, progress: mine, members: c.members || [], at: String(c.created_at).slice(0, 10) };
+        });
+        sess.inbox = [...items, ...sess.inbox.filter((x) => !x.cloud)];
+        if (sess === cur()) settle(sess, true); else save();
+      }
+      if (['defis', 'profil', 'today'].includes(ui.view) && !ui.ob && !document.activeElement.matches('input, textarea, select')) render();
+    } catch (e) { /* offline: keep what we have */ }
+  }
+
+  const loginForm = () => `<form id="login-form" class="ai-block" novalidate>
+      <div class="field"><label for="login-email">Ton e-mail</label><input class="input" id="login-email" type="email" autocomplete="email" inputmode="email" placeholder="prenom@exemple.fr"></div>
+      <div class="actions"><button type="submit" class="btn">Recevoir le lien de connexion</button>${CLOUD.google ? '<button type="button" class="btn btn--ghost" data-act="login-google">Continuer avec Google</button>' : ''}</div>
+      <p class="hint ai-status" id="login-status" role="status"></p></form>`;
+
+  function accountCard(sess) {
+    if (!CLOUD.enabled) return '';
+    const u = CLOUD.user; const pr = CLOUD.profile; let body;
+    if (!u) body = `<p>Facultatif et gratuit : sauvegarde ta progression, retrouve-la sur tous tes appareils et défie tes amis où qu’ils soient. Pas de mot de passe : tu reçois un lien par e-mail.</p>${loginForm()}`;
+    else if (!pr) body = `<form id="pseudo-form" class="ai-block" novalidate><p>Connecté avec ${esc(u.email || 'ton compte')}. Choisis ton pseudo : c’est lui que tes amis chercheront.</p>
+        <div class="field"><label for="pseudo">Pseudo</label><input class="input" id="pseudo" type="text" maxlength="20" autocomplete="nickname" autocapitalize="off" spellcheck="false" placeholder="adil_fit"><p class="hint">3 à 20 caractères : lettres, chiffres, point, tiret ou tiret bas.</p></div>
+        <label class="consent"><input type="checkbox" id="consent"><span>J’accepte que Kin Fit enregistre mon profil sportif et ma progression, y compris des données de santé (poids, douleurs, allergies), pour me les rendre sur mes appareils. Je peux les exporter ou les supprimer à tout moment. <a href="confidentialite.html" target="_blank" rel="noopener">Politique de confidentialité</a></span></label>
+        <div class="actions"><button type="submit" class="btn">Créer mon compte</button><button type="button" class="btn btn--ghost" data-act="logout">Se déconnecter</button></div>
+        <p class="hint ai-status" id="pseudo-status" role="status"></p></form>`;
+    else body = `<div class="ai-block"><p><b>${esc(pr.pseudo)}</b> · ${esc(u.email || '')}</p>
+        <p class="hint">${sess.uid === u.id ? `Progression sauvegardée${ui.syncAt ? ` à ${ui.syncAt}` : ''}.` : 'Ce compte est lié à une autre session de cet appareil.'}</p>
+        <div class="actions"><button type="button" class="btn btn--ghost" data-act="sync-now">Synchroniser</button><button type="button" class="btn btn--ghost" data-act="export">Exporter mes données</button><button type="button" class="btn btn--ghost" data-act="logout">Se déconnecter</button></div>
+        ${ui.confirmDeleteAccount ? `<div class="note" role="alertdialog" aria-label="Confirmer la suppression du compte"><p>Supprimer définitivement le compte ${esc(pr.pseudo)} ? Sa sauvegarde, ses amis et ses défis partagés seront effacés. Les données de cet appareil restent.</p><div class="actions"><button type="button" class="btn" data-act="account-delete-yes">Supprimer mon compte</button><button type="button" class="btn btn--ghost" data-act="account-delete-no">Garder</button></div></div>`
+          : '<div class="actions"><button type="button" class="btn btn--danger" data-act="account-delete">Supprimer mon compte</button></div>'}
+        <p class="hint"><a href="confidentialite.html" target="_blank" rel="noopener">Politique de confidentialité</a></p></div>`;
+    return `<article class="card ai-card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Compte Kin Fit</h2><p class="muted">${u ? (pr ? 'Connecté' : 'Encore une étape') : 'Facultatif'}</p></div></header>${body}</article>`;
+  }
+
+  function friendsBlock() {
+    if (!CLOUD.enabled) return '';
+    const head = (sub) => `<header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Tes amis Kin Fit</h2><p class="muted">${sub}</p></div></header>`;
+    if (!CLOUD.linked) return `<article class="card friends">${head('Avec un compte gratuit')}<p>Ajoute des amis par leur pseudo, lance-leur des défis et suis leur progression, où qu’ils soient.</p><div class="actions"><button type="button" class="btn btn--amis" data-view="profil">Créer mon compte</button></div></article>`;
+    const fr = ui.friends || []; const inc = fr.filter((f) => f.status === 'pending' && f.incoming); const out = fr.filter((f) => f.status === 'pending' && !f.incoming); const ok = fr.filter((f) => f.status === 'accepted');
+    const av = (p) => `<span class="avatar">${esc(p.slice(0, 1).toUpperCase())}</span>`;
+    return `<article class="card friends">${head(`Ton pseudo : ${esc(CLOUD.profile.pseudo)}`)}
+      <form id="friend-form" class="friend-add" novalidate><label class="sr-only" for="friend-pseudo">Pseudo de ton ami</label><input class="input" id="friend-pseudo" type="text" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="Pseudo de ton ami"><button type="submit" class="btn btn--amis">${icon('plus')}Ajouter</button></form>
+      <p class="hint ai-status" id="friend-status" role="status"></p>
+      ${inc.length ? `<ul class="session-list">${inc.map((f) => `<li>${av(f.pseudo)}<span><b>${esc(f.pseudo)}</b><small>veut être ton ami</small></span><span class="actions"><button type="button" class="btn btn--amis" data-faccept="${f.friendship_id}">Accepter</button><button type="button" class="btn btn--ghost" data-fremove="${f.friendship_id}">Refuser</button></span></li>`).join('')}</ul>` : ''}
+      ${ok.length ? `<ul class="session-list">${ok.map((f) => `<li>${av(f.pseudo)}<span><b>${esc(f.pseudo)}</b><small>Ami</small></span><button type="button" class="link-btn" data-fremove="${f.friendship_id}">Retirer</button></li>`).join('')}</ul>` : '<p class="empty">Ajoute un ami avec son pseudo : il recevra ta demande.</p>'}
+      ${out.length ? `<p class="hint">En attente de réponse : ${out.map((f) => esc(f.pseudo)).join(', ')}</p>` : ''}
+    </article>`;
+  }
+
   /* ---------- Coach IA settings (per device) ---------- */
 
   const AI_ERR = {
@@ -1000,6 +1124,7 @@
         <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Mon profil</h2></div></header>${profileFacts(p, false)}
           <p><b>Petit-déjeuner :</b> ${PDJ[p.petitdej]}. <b>Alimentation :</b> ${esc(M.summary(p))}. <b>À éviter :</b> ${p.eviter.length ? esc(p.eviter.map((a) => ALLERG[a]).join(', ')) : 'rien de signalé'}. <b>Restrictions :</b> ${p.restrictions.trim() ? esc(p.restrictions) : 'aucune'}.</p>
           <div class="actions"><button type="button" class="btn" data-act="edit">Modifier mon profil</button><button type="button" class="btn btn--ghost" data-act="new">Nouvelle session</button></div></article>
+        ${accountCard(sess)}
         ${aiSettingsCard(sess)}
         ${installCard()}
         <article class="card"><header class="card-head"><span class="chip-ico">${icon('user')}</span><div><h2 class="h2">Langue et pays</h2></div></header>
@@ -1016,15 +1141,17 @@
   function openLaunch() {
     const sess = cur(); if (!sess) return;
     const others = state.sessions.filter((s) => s.id !== sess.id);
+    const pals = CLOUD.linked ? (ui.friends || []).filter((f) => f.status === 'accepted') : [];
     let dlg = $('#launch'); if (dlg) dlg.remove();
     dlg = document.createElement('dialog'); dlg.id = 'launch'; dlg.className = 'dlg'; dlg.setAttribute('aria-labelledby', 'launch-title');
     dlg.innerHTML = `<form method="dialog" id="launch-form" class="dlg-body">
       <header class="dlg-head"><h2 class="h2" id="launch-title">Lancer un défi</h2><button type="button" class="round" data-act="launch-close" aria-label="Fermer">${icon('x')}</button></header>
       <fieldset><legend>Choisis le défi</legend><div class="pick">${SOCIAL.map((c, i) => `<label class="pick-item defi--${c.cat}"><input type="radio" name="cid" value="${c.cid}"${i === 0 ? ' checked' : ''}><span class="chip-ico">${icon(c.icon)}</span><span>${esc(c.title)}</span></label>`).join('')}</div></fieldset>
       <fieldset><legend>À qui ?</legend>${others.length ? `<div class="choices">${others.map((s) => `<label class="choice"><input type="checkbox" name="to" value="${s.id}"><span>${esc(s.profile.prenom)}</span></label>`).join('')}</div><p class="hint">Les sessions de cet appareil le reçoivent tout de suite. Pour quelqu’un d’autre, partage le lien.</p>` : '<p class="hint">Aucune autre session sur cet appareil : partage le lien avec qui tu veux.</p>'}</fieldset>
+      ${pals.length ? `<fieldset><legend>Tes amis Kin Fit</legend><div class="choices">${pals.map((f) => `<label class="choice"><input type="checkbox" name="friend" value="${f.friend_id}" data-pseudo="${esc(f.pseudo)}"><span>${esc(f.pseudo)}</span></label>`).join('')}</div><p class="hint">Ils le reçoivent sur leur téléphone et vous voyez la progression de chacun.</p></fieldset>` : ''}
       <div class="field"><label for="launch-msg">Un mot pour motiver (facultatif)</label><input type="text" id="launch-msg" name="msg" maxlength="120" placeholder="Exemple : Cap ou pas cap ?"></div>
       <p class="error" id="launch-error" role="alert"></p>
-      <div class="dlg-actions">${others.length ? `<button type="button" class="btn btn--amis" data-act="launch-send">${icon('send')}Envoyer</button>` : ''}<button type="button" class="btn btn--ghost" data-act="launch-share">${icon('share')}Partager le lien</button></div>
+      <div class="dlg-actions">${others.length || pals.length ? `<button type="button" class="btn btn--amis" data-act="launch-send">${icon('send')}Envoyer</button>` : ''}<button type="button" class="btn btn--ghost" data-act="launch-share">${icon('share')}Partager le lien</button></div>
     </form>`;
     document.body.appendChild(dlg);
     dlg.addEventListener('close', () => dlg.remove());
@@ -1132,7 +1259,7 @@
           ${o.step > 0 ? '<button type="button" class="btn btn--ghost" data-act="ob-back">Retour</button>' : (state.sessions.length ? '<button type="button" class="btn btn--ghost" data-act="ob-cancel">Annuler</button>' : '<span></span>')}
           <button type="submit" class="btn btn--big btn--sheen">${o.step === STEPS.length - 1 ? 'Créer mon profil' : 'Continuer'}</button>
         </div>
-      </form></div>`;
+      </form>${!state.sessions.length && !o.editId && CLOUD.enabled ? `<div class="ob-login">${CLOUD.signedIn && !CLOUD.profile ? '<p class="hint">Ce compte n’a pas encore de profil Kin Fit : termine ces étapes, puis choisis ton pseudo dans Profil.</p>' : `<details><summary>J’ai déjà un compte Kin Fit</summary>${loginForm()}</details>`}</div>` : ''}</div>`;
   }
 
   function collect() {
@@ -1233,7 +1360,7 @@
 
   /* ---------- Events ---------- */
 
-  function go(view) { ui.view = view; ui.confirmDelete = false; render(); $('#main').focus({ preventScroll: true }); window.scrollTo(0, 0); }
+  function go(view) { ui.view = view; ui.confirmDelete = false; if (view === 'defis') refreshSocial(); render(); $('#main').focus({ preventScroll: true }); window.scrollTo(0, 0); }
   function startOnboarding(editId) {
     const s = editId ? state.sessions.find((x) => x.id === editId) : null;
     ui.ob = { step: 0, p: s ? JSON.parse(JSON.stringify(s.profile)) : blank(), editId: editId || null };
@@ -1291,13 +1418,15 @@
     }
     if (t.dataset.sstep && sess) {
       const [id, v] = t.dataset.sstep.split('|'); const x = sess.inbox.find((y) => y.id === id);
-      if (x) { x.progress = Math.max(0, (x.progress || 0) + +v); settle(sess); render(); refocus(`[data-sstep="${t.dataset.sstep}"]`); }
+      if (x) { x.progress = Math.max(0, (x.progress || 0) + +v); if (x.cloud) CLOUD.setProgress(x.id, x.progress).catch(() => {}); settle(sess); render(); refocus(`[data-sstep="${t.dataset.sstep}"]`); }
       return;
     }
-    if (t.dataset.accept && sess) { const x = sess.inbox.find((y) => y.id === t.dataset.accept); if (x) { x.status = 'accepted'; save(); render(); toast('Défi relevé. À toi de jouer !'); } return; }
-    if (t.dataset.decline && sess) { const x = sess.inbox.find((y) => y.id === t.dataset.decline); if (x) { x.status = 'declined'; save(); render(); } return; }
+    if (t.dataset.accept && sess) { const x = sess.inbox.find((y) => y.id === t.dataset.accept); if (x) { x.status = 'accepted'; if (x.cloud) CLOUD.respond(x.id, 'accepted').catch(() => {}); save(); render(); toast('Défi relevé. À toi de jouer !'); } return; }
+    if (t.dataset.decline && sess) { const x = sess.inbox.find((y) => y.id === t.dataset.decline); if (x) { x.status = 'declined'; if (x.cloud) CLOUD.respond(x.id, 'declined').catch(() => {}); save(); render(); } return; }
     if (t.dataset.copy && sess) { const x = sess.inbox.find((y) => y.id === t.dataset.copy); if (x) { const r = await shareItem(x, sess); if (r) toast(r === 'copié' ? 'Lien copié. Envoie-le à qui tu veux.' : 'Défi partagé.'); } return; }
     if (t.dataset.give && sess) return openGive(t.dataset.give);
+    if (t.dataset.faccept) { try { await CLOUD.acceptFriend(+t.dataset.faccept); toast('Ami ajouté.'); } catch (err) { toast(cloudErr(err)); } return refreshSocial(); }
+    if (t.dataset.fremove) { try { await CLOUD.removeFriend(+t.dataset.fremove); } catch (err) { toast(cloudErr(err)); } return refreshSocial(); }
     if (t.dataset.bf && sess) { sess.profile.petitdej = t.dataset.bf; save(); render(); return refocus(`[data-bf="${t.dataset.bf}"]`); }
 
     const a = t.dataset.act; if (!a) return;
@@ -1323,12 +1452,26 @@
     }
     if (a === 'launch-close') { const d = $('#launch'); if (d) d.close(); return; }
     if (a === 'launch-send' && sess) {
-      const ids = new FormData($('#launch-form')).getAll('to');
-      if (!ids.length) { $('#launch-error').textContent = 'Coche au moins une personne, ou partage le lien.'; return; }
-      const names = ids.map((id) => state.sessions.find((s) => s.id === id).profile.prenom);
-      const base = createChallenge(sess, names.join(', '));
-      ids.forEach((id) => { const s = state.sessions.find((x) => x.id === id); addToInbox(s, { ...base, from: sess.profile.prenom, fromSid: sess.id, status: 'new' }); });
-      save(); $('#launch').close(); ui.defisTab = 'amis'; settle(sess); go('defis'); toast(`Défi envoyé à ${names.join(', ')}.`); return;
+      const fd = new FormData($('#launch-form')); const ids = fd.getAll('to'); const fids = fd.getAll('friend');
+      if (!ids.length && !fids.length) { $('#launch-error').textContent = 'Coche au moins une personne, ou partage le lien.'; return; }
+      const names = [];
+      if (fids.length) {
+        const c = SOCIAL.find((x) => x.cid === fd.get('cid')); const msg = String(fd.get('msg') || '').trim().slice(0, 120);
+        const pseudos = [...$$('input[name="friend"]:checked')].map((i) => i.dataset.pseudo);
+        t.disabled = true;
+        try {
+          const id = await CLOUD.createChallenge(c, msg, fids);
+          addToInbox(sess, { id, cloud: true, cid: c.cid, title: c.title, unit: c.unit, target: c.target, cat: c.cat, icon: c.icon, steps: c.steps, msg, progress: 0, from: CLOUD.profile.pseudo, self: true, status: 'accepted', members: [], at: iso(TODAY) });
+          sess.sent.unshift({ id, title: c.title, to: pseudos.join(', '), at: iso(TODAY) }); names.push(...pseudos);
+        } catch (err) { t.disabled = false; $('#launch-error').textContent = 'Le défi n’a pas pu partir. Vérifie ta connexion et réessaie.'; return; }
+      }
+      if (ids.length) {
+        const local = ids.map((id) => state.sessions.find((s) => s.id === id).profile.prenom);
+        const base = createChallenge(sess, local.join(', '));
+        ids.forEach((id) => { const s = state.sessions.find((x) => x.id === id); addToInbox(s, { ...base, from: sess.profile.prenom, fromSid: sess.id, status: 'new' }); });
+        names.push(...local);
+      }
+      save(); $('#launch').close(); ui.defisTab = 'amis'; settle(sess); go('defis'); toast(`Défi envoyé à ${names.join(', ')}.`); refreshSocial(); return;
     }
     if (a === 'launch-share' && sess) {
       const base = createChallenge(sess, 'lien partagé'); save();
@@ -1344,6 +1487,25 @@
       state.pendingShare = null; save(); ui.defisTab = 'amis'; go('defis'); toast('Défi relevé. À toi de jouer !'); return;
     }
     if (a === 'share-later') { state.pendingShare = null; save(); render(); return; }
+    if (a === 'login-google') { try { await CLOUD.signInGoogle(); } catch (err) { toast(cloudErr(err)); } return; }
+    if (a === 'logout') { await CLOUD.signOut().catch(() => {}); ui.friends = null; render(); toast('Déconnecté. Tes données restent sur cet appareil.'); return; }
+    if (a === 'sync-now') { await cloudPush(true); await refreshSocial(); render(); toast('Progression synchronisée.'); return; }
+    if (a === 'export') {
+      try {
+        const data = await CLOUD.exportData();
+        const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+        const link = document.createElement('a'); link.href = url; link.download = `kin-fit-${CLOUD.profile.pseudo}.json`; document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      } catch (err) { toast(cloudErr(err)); }
+      return;
+    }
+    if (a === 'account-delete') { ui.confirmDeleteAccount = true; render(); return refocus('[data-act="account-delete-no"]'); }
+    if (a === 'account-delete-no') { ui.confirmDeleteAccount = false; render(); return; }
+    if (a === 'account-delete-yes') {
+      try { await CLOUD.deleteAccount(); state.sessions.forEach((x) => { delete x.uid; x.inbox = (x.inbox || []).filter((y) => !y.cloud); }); ui.confirmDeleteAccount = false; ui.friends = null; save(); render(); toast('Compte supprimé. Les données de cet appareil restent.'); }
+      catch (err) { toast(cloudErr(err)); }
+      return;
+    }
     if (a === 'gemini-forget') { AI.setConfig({ provider: 'none', key: '' }); ui.aiPick = 'none'; render(); toast('Clé Gemini retirée de cet appareil.'); return refocus('input[name="aiprov"][value="none"]'); }
     if (a === 'local-use') { AI.setConfig({ provider: 'local' }); render(); toast('IA sur l’appareil activée pour le coach.'); return; }
     if (a === 'local-load') {
@@ -1423,6 +1585,31 @@
 
   document.addEventListener('submit', (e) => {
     if (e.target.id === 'launch-form' || e.target.id === 'give-form') { e.preventDefault(); return; }
+    if (e.target.id === 'login-form') {
+      e.preventDefault(); const email = $('#login-email').value.trim(); const st = $('#login-status'); const btn = e.target.querySelector('[type="submit"]');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.textContent = 'Entre une adresse e-mail valide.'; return; }
+      btn.disabled = true; st.textContent = 'Envoi du lien…';
+      CLOUD.signInEmail(email).then(() => { st.textContent = `Lien envoyé à ${email}. Ouvre-le sur cet appareil pour te connecter (pense à regarder les indésirables).`; })
+        .catch((err) => { btn.disabled = false; st.textContent = cloudErr(err); });
+      return;
+    }
+    if (e.target.id === 'pseudo-form') {
+      e.preventDefault(); const pseudo = $('#pseudo').value.trim(); const st = $('#pseudo-status'); const sess = cur();
+      if (!/^[A-Za-z0-9_.-]{3,20}$/.test(pseudo)) { st.textContent = 'Pseudo de 3 à 20 caractères : lettres, chiffres, point, tiret ou tiret bas.'; return; }
+      if (!$('#consent').checked) { st.textContent = 'Coche la case de consentement pour créer ton compte.'; return; }
+      st.textContent = 'Création du compte…';
+      CLOUD.createProfile(pseudo, sess ? cloudState(sess) : {})
+        .then((pr) => { if (sess) { sess.uid = CLOUD.user.id; sess.cloudAt = pr.updated_at; } save(); render(); toast(`Compte ${pseudo} créé. Ta progression est sauvegardée.`); refreshSocial(); })
+        .catch((err) => { st.textContent = cloudErr(err); });
+      return;
+    }
+    if (e.target.id === 'friend-form') {
+      e.preventDefault(); const p = $('#friend-pseudo').value.trim(); const st = $('#friend-status');
+      if (!p) { st.textContent = 'Entre le pseudo de ton ami.'; return; }
+      st.textContent = 'Recherche…';
+      CLOUD.requestFriend(p).then((f) => { st.textContent = `Demande envoyée à ${f.pseudo}.`; refreshSocial(); }).catch((err) => { st.textContent = cloudErr(err); });
+      return;
+    }
     if (e.target.id === 'gemini-form') {
       e.preventDefault(); const key = $('#gemini-key').value.trim(); const st = $('#gemini-status'); const btn = e.target.querySelector('[type="submit"]');
       if (!key) { st.textContent = 'Colle d’abord ta clé Gemini.'; return; }
@@ -1462,5 +1649,10 @@
   if (state.pendingShare && cur()) ui.view = 'defis';
   if (cur()) settle(cur(), true);
   render();
+  if (CLOUD.enabled) {
+    CLOUD.onChange(() => linkAccount());
+    CLOUD.start().then((ok) => { if (ok) linkAccount(); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && CLOUD.linked) CLOUD.pull().then(() => linkAccount()).catch(() => {}); });
+  }
   AI.ping.then((ok) => { if (ok && !ui.ob && !document.activeElement.matches('input, textarea, select')) render(); });
 })();

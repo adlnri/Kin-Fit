@@ -797,3 +797,14 @@ body:is([data-view="welcome"], [data-view="onboarding"]) .ob-form {
 @keyframes twinkle { 0%, 100% { transform: scale(.6) rotate(0); opacity: .45; } 50% { transform: scale(1.1) rotate(45deg); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .ob-side .wordmark::after { animation: none; opacity: .8; } }
 @media print { .wordmark { color: #000; text-shadow: none; } }
+
+/* ---------- Account and friends ---------- */
+.consent { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; font-size: .9375rem; color: var(--text); }
+.consent input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--gold); }
+.friend-add { display: flex; gap: 8px; flex-wrap: wrap; }
+.friend-add .input { flex: 1 1 180px; min-width: 0; }
+.friends .session-list .actions { display: inline-flex; gap: 6px; margin-left: auto; }
+.ob-login { padding: 0 clamp(28px, 4vw, 56px) 28px; }
+.ob-login summary { cursor: pointer; color: var(--gold-hi); font-weight: 700; padding: 10px 0; }
+body:is([data-view="welcome"], [data-view="onboarding"]) .ob-login { grid-column: 2; padding: 0; }
+@media (max-width: 820px) { body:is([data-view="welcome"], [data-view="onboarding"]) .ob-login { grid-column: 1; } }

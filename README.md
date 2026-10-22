@@ -73,3 +73,17 @@ Les prompts coach et nutrition sont dans `ai-core.mjs`, partagés par Gemini, l'
 
 Le numéro de version `?v=…` des fichiers apparaît dans `index.html` **et** dans `sw.js` (`CACHE` et `V`).
 Il faut l'augmenter aux deux endroits à chaque modification, sinon les téléphones gardent l'ancienne version en cache.
+
+## Comptes et amis (Supabase, facultatif)
+
+Sans configuration, l'app marche sans compte. Pour activer les comptes, la sauvegarde et les défis entre amis :
+
+1. Créer un projet sur <https://supabase.com> (région **Central EU (Frankfurt)**).
+2. **SQL Editor › New query** : coller le contenu de `supabase/schema.sql`, puis **Run**.
+3. **Authentication › URL Configuration** : *Site URL* = `https://adlnri.github.io/kin-fit/` et ajouter la même adresse dans *Redirect URLs*.
+4. **Project Settings › API** : copier *Project URL* et la clé *anon public* dans `config.js` (`url`, `key`), puis augmenter le `?v=` dans `index.html` et `sw.js`.
+5. Facultatif, Google : **Authentication › Providers › Google** (identifiants créés dans Google Cloud Console), puis `google: true` dans `config.js`.
+
+Ne jamais mettre la clé `service_role` / `secret` ni le mot de passe de la base dans le code. La sécurité repose sur les règles d'accès (Row Level Security) de `schema.sql` : chacun ne lit que ses données, ses amitiés et les défis auxquels il participe.
+
+Avant d'ouvrir au public : compléter les champs `[...]` de `confidentialite.html` (éditeur, e-mail de contact) et configurer un envoi d'e-mails dédié (Authentication › SMTP), l'envoi par défaut de Supabase étant limité à quelques e-mails par heure.
