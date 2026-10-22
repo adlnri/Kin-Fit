@@ -155,6 +155,7 @@
   // Compendium of Physical Activities: strength training 5, faster supersets 6.5, vigorous circuit 8.
   const DUREES = [30, 45, 60, 75, 90];
   const DUR = {
+    15: { n: 4, ds: -1, rest: 0.4, ss: true, met: 8.5 },
     30: { n: 5, ds: -1, rest: 0.5, ss: true, met: 8 },
     45: { n: 5, ds: 0, rest: 0.7, ss: true, met: 6.5 },
     60: { n: 6, ds: 0, rest: 1, met: 5 },
@@ -291,8 +292,10 @@
         const D = durOf(p); const extra = D - 10 - k.duree;
         const c = { ...k, kind: 'cardio', day, title: k.type };
         if (extra >= 5) { c.duree = D; c.format = `${k.format}. Échauffement 10 min, puis ${extra} min d’endurance facile pour finir`; }
+        if (D < k.duree) { c.duree = D; c.format = `${k.format}. Version ${D} min : même rythme, moins de blocs, 3 min d’échauffement`; }
         // The base format at its own intensity; any added warm-up and easy endurance at MET 5.
-        c.kcal = burnOf(k === ZONE2 ? 6 : 8, p, k.duree) + burnOf(5, p, c.duree - k.duree);
+        const met = k === ZONE2 ? 6 : 8;
+        c.kcal = c.duree <= k.duree ? burnOf(met, p, c.duree) : burnOf(met, p, k.duree) + burnOf(5, p, c.duree - k.duree);
         return c;
       }
       const t = TPL[c];

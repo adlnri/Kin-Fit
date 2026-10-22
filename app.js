@@ -156,8 +156,20 @@
     return { ...s, target: Math.max(1, Math.round(s.base * [0.6, 1, 1.4][lvIdx(p.niveau)])) };
   }
 
+  // Today's check-in (time available, how you feel) reshapes only today's session.
+  const FORME = { fatigue: 'Fatigué', normal: 'Normal', forme: 'En forme' };
+  const todayCheck = (sess) => (sess.today && sess.today.date === iso(TODAY) ? sess.today : null);
+  function dayView(sess, dayI) {
+    const c = todayCheck(sess);
+    if (dayI !== todayIdx || !c) return sess;
+    if (!c.min) return { ...sess, rest: true };
+    const adj = { fatigue: -15, normal: 0, forme: 10 }[c.forme] || 0;
+    return { ...sess, profile: { ...sess.profile, duree: c.min, niveau: Math.max(0, Math.min(100, sess.profile.niveau + adj)) } };
+  }
+
   function dailyList(sess, dayI) {
-    const p = sess.profile; const d = iso(dayDate(dayI)); const L0 = lg(sess, d); const it = buildPlan(sess).byDay(dayI);
+    const sv = dayView(sess, dayI);
+    const p = sess.profile; const d = iso(dayDate(dayI)); const L0 = lg(sess, d); const it = sv.rest ? null : buildPlan(sv).byDay(dayI);
     const out = [];
     if (it && it.kind === 'muscu') out.push({ key: doneKey(it, d), cat: 'sport', icon: 'dumbbell', pts: 30, title: 'Termine ta séance', desc: it.short, progress: Math.min(L0.ex.length, it.ex.length), target: it.ex.length, unit: 'exercices', mode: 'auto', hint: 'Coche chaque exercice dans Aujourd’hui.' });
     else if (it) out.push({ key: doneKey(it, d), cat: 'cardio', icon: 'heart', pts: 30, title: 'Boucle ton cardio', desc: it.type, progress: L0.status === 'faite' ? 1 : 0, target: 1, unit: '', mode: 'tap', act: 'cardio', label: 'Cardio terminé' });
@@ -685,6 +697,7 @@
       <div class="hero-copy">
         <h1 class="hero-title" id="hero-title">${title}</h1>
         <p class="lede">${ui.day === todayIdx ? `${esc(day)} · ` : ''}${esc(sportName(p))}, objectif ${OBJECTIFS[p.objectif].toLowerCase()}${future ? ' · à venir' : ''}</p>
+        ${ui.day === todayIdx ? (() => { const c = todayCheck(sess); return `<button type="button" class="checkin-chip" data-act="checkin">${icon('calendar')}<span>${c ? `${c.min ? `${c.min} min` : 'Repos'} · ${FORME[c.forme] || FORME.normal}` : 'Combien de temps aujourd’hui ?'}</span><b>${c ? 'Modifier' : 'Répondre'}</b></button>`; })() : ''}
         <div class="hero-session"><span class="chip-ico">${icon(ico)}</span><div><b>${esc(name)}</b><span>${esc(meta)}</span></div></div>
         <div class="actions"><button type="button" class="btn btn--big btn--sheen" data-act="start">${cta}</button><button type="button" class="btn btn--big btn--ghost btn--glass" data-act="parcours">${icon('bolt')}Faire un parcours</button></div>
       </div>
@@ -697,7 +710,8 @@
   }
 
   function viewToday(sess) {
-    const plan = buildPlan(sess); const item = plan.byDay(ui.day);
+    const sv = dayView(sess, ui.day);
+    const plan = buildPlan(sess); const item = sv.rest ? null : buildPlan(sv).byDay(ui.day);
     const d = dayDate(ui.day); const key = iso(d); const L0 = lg(sess, key);
     const future = ui.day > todayIdx;
     const date = d.toLocaleDateString(window.NA_I18N.locale, { weekday: 'long', day: 'numeric', month: 'long' });
@@ -709,11 +723,11 @@
         <span class="day-l">${l}</span><span class="day-n">${dayDate(i).getDate()}</span><span class="day-k">${done ? icon('check') : kind}</span></button>`;
     }).join('');
     const ro = future;
-    const main = !item ? recoCard(sess, 'Repos et récupération', { log: L0, readOnly: ro }) : item.kind === 'muscu' ? sessionCard(item, sess, { check: true, log: L0, readOnly: ro }) : cardioCard(item, sess, { check: true, log: L0, readOnly: ro });
+    const main = !item ? recoCard(sv, 'Repos et récupération', { log: L0, readOnly: ro }) : item.kind === 'muscu' ? sessionCard(item, sv, { check: true, log: L0, readOnly: ro }) : cardioCard(item, sv, { check: true, log: L0, readOnly: ro });
     const daily = dailyList(sess, ui.day);
     const water = daily.find((c) => c.mode === 'water');
     return `${pendingBanner()}
-      ${hero(sess, item, daily, date, future)}
+      ${hero(sv, item, daily, date, future)}
       <div class="hello hello--today">${scorebar(sess)}</div>
       <div class="week" role="group" aria-label="Semaine">${week}</div>
       <section class="daily" aria-label="Défis du jour">${daily.map((c) => defiCard(c, sess, { readOnly: true })).join('')}</section>
@@ -1166,6 +1180,23 @@
     dlg.showModal();
   }
 
+  function openCheckin() {
+    const sess = cur(); if (!sess || $('#checkin')) return;
+    const c = todayCheck(sess); const it = buildPlan(sess).byDay(todayIdx);
+    const min = c ? c.min : (it ? durOf(sess.profile) : 0); const forme = c ? c.forme : 'normal';
+    const dlg = document.createElement('dialog'); dlg.id = 'checkin'; dlg.className = 'dlg dlg--sheet'; dlg.setAttribute('aria-labelledby', 'checkin-title');
+    dlg.innerHTML = `<form method="dialog" id="checkin-form" class="dlg-body">
+      <header class="dlg-head"><h2 class="h2" id="checkin-title">Combien de temps pour ton sport aujourd’hui ?</h2><button type="button" class="round" data-act="checkin-close" aria-label="Fermer">${icon('x')}</button></header>
+      <p class="hint">${it ? `Au programme : ${esc(it.title)}. Ta séance s’adapte au temps que tu as, pour une dépense proche d’une séance complète.` : 'Jour de repos prévu : 10 minutes de mobilité suffisent. Tu peux aussi choisir un temps pour faire un parcours.'}</p>
+      <fieldset><legend>Temps disponible</legend><div class="choices">${[15, 30, 45, 60, 90].map((n) => radio('min', String(n), `${n} min`, String(min))).join('')}${radio('min', '0', 'Repos aujourd’hui', String(min))}</div></fieldset>
+      <fieldset><legend>Comment tu te sens ?</legend><div class="choices">${Object.entries(FORME).map(([k, l]) => radio('forme', k, l, forme)).join('')}</div><p class="hint">Fatigué : charges un peu plus légères. En forme : on pousse un peu plus.</p></fieldset>
+      <div class="dlg-actions"><button type="submit" class="btn btn--big btn--sheen">C’est parti</button></div>
+    </form>`;
+    document.body.appendChild(dlg);
+    dlg.addEventListener('close', () => dlg.remove());
+    dlg.showModal();
+  }
+
   function openGive(id) {
     const sess = cur(); const st = STICKERS.find((x) => x.id === id); if (!sess || !st) return;
     const others = state.sessions.filter((x) => x.id !== sess.id);
@@ -1336,6 +1367,7 @@
     main.classList.toggle('printing', ui.printing);
     main.innerHTML = (views[ui.view] || viewToday)(sess);
     mark(ui.view);
+    if (ui.view === 'today' && sess && !ui.checkinAsked && !todayCheck(sess) && !state.pendingShare) { ui.checkinAsked = true; setTimeout(openCheckin, 700); }
     renderRail(sess);
     const chat = $('#chat'); if (chat) chat.scrollTop = chat.scrollHeight;
   }
@@ -1526,6 +1558,8 @@
       return;
     }
     if (a === 'ai-setup') { go('profil'); const c = $$('.ai-card').find((x) => x.querySelector('input[name="aiprov"]')); if (c) c.scrollIntoView({ block: 'start' }); return; }
+    if (a === 'checkin') return openCheckin();
+    if (a === 'checkin-close') { const d = $('#checkin'); if (d) d.close(); return; }
     if (a === 'parcours') { ui.planTab = 'parcours'; return go('plan'); }
     if (a === 'start') {
       const r = t.getBoundingClientRect(); sparks(r.left + r.width / 2, r.top + r.height / 2, 40, 0.5);
@@ -1594,6 +1628,14 @@
 
   document.addEventListener('submit', (e) => {
     if (e.target.id === 'launch-form' || e.target.id === 'give-form') { e.preventDefault(); return; }
+    if (e.target.id === 'checkin-form') {
+      e.preventDefault(); const sess = cur(); if (!sess) return;
+      const fd = new FormData(e.target); const min = +(fd.get('min') || 0);
+      sess.today = { date: iso(TODAY), min, forme: fd.get('forme') || 'normal' };
+      $('#checkin').close(); ui.day = todayIdx; settle(sess, true); render();
+      toast(min ? `Séance de ${min} min prête.` : 'Repos noté : profite pour récupérer.');
+      return;
+    }
     if (e.target.id === 'login-form') {
       e.preventDefault(); const email = $('#login-email').value.trim(); const st = $('#login-status'); const btn = e.target.querySelector('[type="submit"]');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { st.textContent = 'Entre une adresse e-mail valide.'; return; }
