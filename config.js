@@ -2,7 +2,7 @@
    database rules in supabase/schema.sql. Leave them empty to run the app without accounts.
    Never put the "service_role" / "secret" key or the database password here. */
 window.KINFIT_CLOUD = {
-  url: '',          // Project URL, e.g. https://xxxx.supabase.co
-  key: '',          // anon public (or publishable) key
+  url: 'https://jyyyyllchmrrgdrxegrg.supabase.co',  // Project URL
+  key: 'sb_publishable_jnUV-cjPm58Yhz15TAHbNw_6MRo5Hb4',  // publishable key (public by design)
   google: false,    // true once Google sign-in is set up in Supabase › Authentication › Providers
 };
