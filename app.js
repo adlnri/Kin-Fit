@@ -962,8 +962,12 @@
     not_found: 'Aucun compte avec ce pseudo. Vérifie l’orthographe.',
     network: 'Pas de connexion. Réessaie quand tu as du réseau.',
     offline: 'Le service de comptes ne répond pas. Réessaie plus tard.',
+    rate_limited: 'Trop de liens demandés en peu de temps. Attends quelques minutes (jusqu’à une heure) avant de réessayer.',
+    email_send: 'Le serveur n’arrive pas à envoyer l’e-mail de connexion. Vérifie les réglages SMTP dans Supabase (adresse Gmail et mot de passe d’application).',
+    signup_disabled: 'Les inscriptions sont fermées dans Supabase (Authentication › Sign In / Providers).',
   };
-  const cloudErr = (e) => CLOUD_ERR[e && e.code] || 'Ça n’a pas marché. Réessaie dans un moment.';
+  // Unknown errors show the server's own message, so the cause can be fixed.
+  const cloudErr = (e) => CLOUD_ERR[e && e.code] || `Ça n’a pas marché${e && e.detail ? ` (${e.detail})` : ''}. Réessaie dans un moment.`;
 
   // What the account keeps: the whole session, minus device-only bits; shared challenges live on the server.
   function cloudState(sess) {

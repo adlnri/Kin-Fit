@@ -10,12 +10,16 @@
   const enabled = !!(CFG.url && CFG.key);
   const st = { sb: null, user: null, profile: null, ready: null, listeners: [] };
 
-  const fail = (code, cause) => { const e = new Error(code); e.code = code; e.cause = cause; return e; };
+  const fail = (code, cause) => { const e = new Error(code); e.code = code; e.cause = cause; e.detail = cause ? `${cause.status || cause.code || ''} ${cause.message || ''}`.trim() : ''; return e; };
   const check = ({ data, error }) => {
     if (error) {
+      const msg = error.message || '';
       if (error.code === '23505') throw fail('pseudo_taken', error);
       if (error.code === '23514') throw fail('pseudo_invalid', error);
-      if (/fetch|network/i.test(error.message || '')) throw fail('network', error);
+      if (error.status === 429 || /rate limit|too many/i.test(msg)) throw fail('rate_limited', error);
+      if (/sending|smtp|email.*(send|deliver)|confirmation email|magic link/i.test(msg)) throw fail('email_send', error);
+      if (/signups? not allowed|signup.*disabled/i.test(msg)) throw fail('signup_disabled', error);
+      if (/fetch|network/i.test(msg)) throw fail('network', error);
       throw fail('server', error);
     }
     return data;

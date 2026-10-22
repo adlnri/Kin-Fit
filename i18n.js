@@ -28,6 +28,9 @@
   /* Strings added after the bulk translation (welcome, budget, regions, alternatives, patterns' words). */
   const EXTRA = {
     'Bienvenue': ['Welcome', 'Bienvenido'],
+    "Trop de liens demandés en peu de temps. Attends quelques minutes (jusqu’à une heure) avant de réessayer.": ["Too many links requested in a short time. Wait a few minutes (up to an hour) before trying again.", "Demasiados enlaces pedidos en poco tiempo. Espera unos minutos (hasta una hora) antes de volver a intentarlo."],
+    "Le serveur n’arrive pas à envoyer l’e-mail de connexion. Vérifie les réglages SMTP dans Supabase (adresse Gmail et mot de passe d’application).": ["The server cannot send the sign-in e-mail. Check the SMTP settings in Supabase (Gmail address and app password).", "El servidor no consigue enviar el correo de acceso. Revisa los ajustes SMTP en Supabase (dirección de Gmail y contraseña de aplicación)."],
+    "Les inscriptions sont fermées dans Supabase (Authentication › Sign In / Providers).": ["Sign-ups are closed in Supabase (Authentication › Sign In / Providers).", "Los registros están cerrados en Supabase (Authentication › Sign In / Providers)."],
     "Activer le coach IA": ["Turn on the AI coach", "Activar el coach IA"],
     "enchaîne avec le B": ["go straight into B", "encadena con la B"],
     "Finisher · 4 min": ["Finisher · 4 min", "Finisher · 4 min"],
